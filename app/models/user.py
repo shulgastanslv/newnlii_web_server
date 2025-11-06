@@ -8,4 +8,5 @@ class User(Base):
     email = Column(String, unique=True, nullable=False)
     name = Column(String, nullable=False)
     role = Column(String, nullable=False, default="developer")
+    hashed_password = Column(String, nullable=False)
     created_at = Column(DateTime, server_default=func.now())
