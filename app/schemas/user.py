@@ -1,0 +1,17 @@
+from pydantic import BaseModel, EmailStr
+from datetime import datetime
+
+class UserBase(BaseModel):
+    email: EmailStr
+    name: str
+    role: str
+
+class UserCreate(UserBase):
+    pass
+
+class UserOut(UserBase):
+    id: int
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
