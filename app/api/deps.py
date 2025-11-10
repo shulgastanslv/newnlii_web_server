@@ -1,6 +1,5 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError
 from app.core.security import decode_access_token
 from app.db.session import SessionLocal
 from app.crud.user import get_user_by_email

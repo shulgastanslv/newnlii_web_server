@@ -4,7 +4,6 @@ from app.db.base import Base
 from app.api.router import api_router
 from fastapi.middleware.cors import CORSMiddleware
 
-Base.metadata.create_all(bind=engine)
 
 origins = [
     "http://localhost:3000",
@@ -18,4 +17,5 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 app.include_router(api_router)

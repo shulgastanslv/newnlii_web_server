@@ -17,9 +17,17 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    print(form_data.username, form_data.password)
     user = crud_user.authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
     token = create_access_token({"sub": user.email})
-    return {"access_token": token, "token_type": "bearer"}
+    res = {
+        "access_token": token, 
+        "token_type": "bearer", 
+        "id" : user.id, 
+        "role"  : user.role,
+        "name" : user.name
+    }
+    return res
