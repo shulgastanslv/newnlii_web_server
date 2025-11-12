@@ -1,5 +1,4 @@
 from sqlalchemy.orm import Session
-from app.core.security import hash_password, verify_password
 from app.models.category import Category
 from app.models.project import Project
 from app.schemas.category import CategoryCreate

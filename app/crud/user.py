@@ -1,34 +1,35 @@
 from http.client import HTTPException
 from sqlalchemy.orm import Session
-from app.core.security import hash_password, verify_password
 from app.models.user import User
-from app.schemas.user import UserCreate, UserUpdate
+from app.schemas.user import UserLogin, UserUpdate
 
-def create_user(db: Session, user: UserCreate):
+def create_user(db: Session, user: UserLogin):
     db_user = User(
-        email=user.email,
+        wallet_address=user.wallet_address,
         name=user.name,
         role=user.role,
-        level = user.level,
-        avatar_url = user.avatar_url,
-        hashed_password=hash_password(user.password)
+        level=user.level,
+        image_url=user.image_url,
     )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     return db_user
 
-def get_user_by_email(db: Session, email: str):
-    return db.query(User).filter(User.email == email).first()
-
-def get_user_by_name(db: Session, name : str):
-    return db.query(User).filter(User.name == name).first()
-
-def authenticate_user(db: Session, username: str, password: str):
-    user = get_user_by_name(db, username)
-    if not user or not verify_password(password, user.hashed_password):
-        return None
+def get_user_by_wallet(db: Session, wallet_address: str):
+    user = db.query(User).filter(User.wallet_address == wallet_address).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
     return user
+
+def get_wallet_by_id(id: str, db: Session):
+    user = db.query(User).filter(User.id == id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"wallet_address" : user.wallet_address}
+
+def get_user_by_name(db: Session, name: str):
+    return db.query(User).filter(User.name == name).first()
 
 def get_users(db: Session):
     return db.query(User).all()
@@ -39,8 +40,8 @@ def get_user_by_id(db: Session, id: int):
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
-def update_user(db: Session, user_id: int, update_data: UserUpdate):
-    user = db.query(User).filter(User.id == user_id).first()
+def update_user(db: Session, wallet_address: int, update_data: UserUpdate):
+    user = db.query(User).filter(User.wallet_address == wallet_address).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -48,8 +49,10 @@ def update_user(db: Session, user_id: int, update_data: UserUpdate):
         user.role = update_data.role
     if update_data.level is not None:
         user.level = update_data.level
-    if update_data.avatar_url is not None:
-        user.avatar_url = update_data.avatar_url
+    if update_data.image_url is not None:
+        user.image_url = update_data.image_url
+    if update_data.name is not None:
+        user.name = update_data.name
 
     db.commit()
     db.refresh(user)

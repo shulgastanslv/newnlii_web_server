@@ -1,23 +1,33 @@
+from enum import Enum
 from typing import Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from datetime import datetime
 
-roles = ["Developer", "Customer"]
+class UserRoleEnum(str, Enum):
+    developer = "Developer"
+    customer = "Customer"
 
 class UserBase(BaseModel):
-    email: EmailStr
-    name: str
-    role: Optional[str] = roles[0]
+    wallet_address: str
+    name: Optional[str] = None
+    role: Optional[UserRoleEnum] = None
     level: Optional[int] = 0
-    avatar_url: Optional[str] = None
+    image_url: Optional[str] = None
 
-class UserCreate(UserBase):
-    password: str
+class UserLogin(UserBase):
+    wallet_address: str
+    signature: str
+    message: str
 
 class UserUpdate(BaseModel):
     role: Optional[str] = None
     level: Optional[int] = None
-    avatar_url: Optional[str] = None
+    image_url: Optional[str] = None
+    name: Optional[str] = None
+
+
+class UserWallet(BaseModel):
+    wallet_address: str
 
 class UserOut(UserBase):
     id: int
