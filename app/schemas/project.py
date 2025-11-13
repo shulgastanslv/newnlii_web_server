@@ -10,6 +10,7 @@ class ProjectCreate(ProjectBase):
     category_id: int
     image_url: str
     budget: int
+    crypto_type : str
 
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
@@ -26,5 +27,9 @@ class ProjectOut(ProjectBase):
     owner_id : int
     created_at: datetime
     budget : int
+    crypto_type : str
+    rating : float
+    reviews_count : int
+    is_favorite : bool
     class Config:
         orm_mode = True

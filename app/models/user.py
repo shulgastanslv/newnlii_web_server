@@ -19,10 +19,12 @@ class User(Base):
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
         
-    completed_orders = Column(Integer, default=0)
-    repeat_orders = Column(Integer, default=0)
-    rating = Column(Float, default=0.0)
+    completed_orders = Column(Integer, nullable=False,default=0)
+    repeat_orders = Column(Integer,nullable=False, default=0)
+    rating = Column(Float, nullable=False, default=0.0)
     verified = Column(Boolean, default=False)
+    
     user_reviews = relationship('ProjectReview', backref='user')
     skills = relationship("Skill", secondary="user_skills", back_populates="users")
     specializations = relationship("Specialization", secondary="user_specializations", back_populates="users")
+    projects = relationship("Project", backref="user", lazy="joined")

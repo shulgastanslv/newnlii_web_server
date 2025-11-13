@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from app.api.v1 import project, skill, user, category, specialization, user_skills, user_specializations, order
+from app.api.deepseek import router as deepseek
 
 api_router = APIRouter()
 api_router.include_router(user_skills.router, prefix="/user_skills", tags=["User-Skills"])
@@ -10,3 +11,4 @@ api_router.include_router(category.router, prefix="/categories", tags=["Categori
 api_router.include_router(skill.router, prefix="/skills", tags=["Skills"])
 api_router.include_router(specialization.router, prefix="/specializations", tags=["Specializations"])
 api_router.include_router(order.router, prefix="/orders", tags=["Orders"])
+api_router.include_router(deepseek.router, prefix="/deepseek", tags=["Deepseek"])

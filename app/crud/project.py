@@ -13,7 +13,8 @@ def create_project(wallet_address : str, db: Session, project: ProjectCreate):
         category_id=project.category_id,
         image_url=project.image_url,
         budget=project.budget,
-        owner_id=user.id
+        owner_id=user.id,
+        crypto_type = project.crypto_type
     )
     db.add(res)
     db.commit()

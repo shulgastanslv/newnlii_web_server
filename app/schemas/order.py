@@ -14,6 +14,8 @@ class OrderBase(BaseModel):
     project_id: int
     client_id: int
     developer_id: Optional[int] = None
+    deadline : Optional[datetime] = None
+    budget :int
     status: Optional[OrderStatusEnum] = OrderStatusEnum.pending
 
 class OrderCreate(OrderBase):

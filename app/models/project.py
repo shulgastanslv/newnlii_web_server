@@ -10,14 +10,14 @@ class Project(Base):
     image_url = Column(String, nullable=False)
     description = Column(String, nullable=False)
     budget = Column(Integer, nullable=False)
-    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime, server_default=func.now())
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
-    category = relationship("Category", backref="projects")
-    
+
     crypto_type = Column(String, nullable=True)
     rating = Column(Float, default=0.0)
     reviews_count = Column(Integer, default=0)
     is_favorite = Column(Boolean, default=False)
-
+    
+    category = relationship("Category", backref="projects")
     reviews = relationship("ProjectReview", backref="project")

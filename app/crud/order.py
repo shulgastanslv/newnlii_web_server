@@ -5,6 +5,7 @@ from fastapi import HTTPException
 
 def create_order(db: Session, order: OrderCreate):
     db_order = Order(**order.dict())
+    print(db_order)
     db.add(db_order)
     db.commit()
     db.refresh(db_order)

@@ -14,9 +14,10 @@ def create_user(user: UserLogin, db: Session = Depends(get_db)):
 
 @router.get("/{wallet_address}", response_model=UserOut)
 def get_by_wallet(wallet_address: str, db: Session = Depends(get_db)):
+    print(wallet_address)
     return crud_user.get_user_by_wallet(db, wallet_address)
     
-@router.get("/wallet/{id}", response_model=UserWallet)
+@router.get("/id/{id}", response_model=UserWallet)
 def get_wallet_by_id(id: str, db: Session = Depends(get_db)):
     return crud_user.get_wallet_by_id(id, db)
 
