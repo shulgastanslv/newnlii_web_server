@@ -2,7 +2,7 @@ import json
 from fastapi import APIRouter
 from pydantic import BaseModel
 from app.core.deepseek import OpenAIClient
-from app.schemas.project import ProjectOut
+from app.schemas.shared import ProjectOut
 
 router = APIRouter()
 

@@ -9,6 +9,13 @@ user_skills = Table(
     Column("skill_id", Integer, ForeignKey("skills.id", ondelete="CASCADE"))
 )
 
+project_skills = Table(
+    "project_skills",
+    Base.metadata,
+    Column("project_id", Integer, ForeignKey("projects.id"), primary_key=True),
+    Column("skill_id", Integer, ForeignKey("skills.id"), primary_key=True),
+)
+
 class Skill(Base):
     __tablename__ = "skills"
 
@@ -16,3 +23,8 @@ class Skill(Base):
     name = Column(String, unique=True, nullable=False)
 
     users = relationship("User", secondary=user_skills, back_populates="skills")
+    projects = relationship(
+        "Project",
+        secondary=project_skills,
+        back_populates="skills"  # Обратная связь на свойство skills в Project
+    )

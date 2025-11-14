@@ -1,16 +1,14 @@
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel
-from datetime import datetime
-
-class ProjectBase(BaseModel):
-    name: str
-    description: str
+from app.schemas.shared import ProjectBase
 
 class ProjectCreate(ProjectBase):
     category_id: int
     image_url: str
     budget: int
     crypto_type : str
+    tags: Optional[List[str]] = []
+    skills: Optional[List[str]] = []
 
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
@@ -18,18 +16,5 @@ class ProjectUpdate(BaseModel):
     image_url: Optional[str] = None
     budget: Optional[int] = None
     category_id: Optional[int] = None
-
-class ProjectOut(ProjectBase):
-    id: int
-    image_url : str
-    description : str
-    category_id : int
-    owner_id : int
-    created_at: datetime
-    budget : int
-    crypto_type : str
-    rating : float
-    reviews_count : int
-    is_favorite : bool
-    class Config:
-        orm_mode = True
+    tags: Optional[List[str]] = None
+    skills: Optional[List[str]] = None

@@ -27,4 +27,4 @@ class User(Base):
     user_reviews = relationship('ProjectReview', backref='user')
     skills = relationship("Skill", secondary="user_skills", back_populates="users")
     specializations = relationship("Specialization", secondary="user_specializations", back_populates="users")
-    projects = relationship("Project", backref="user", lazy="joined")
+    projects = relationship("Project", back_populates="owner")

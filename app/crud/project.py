@@ -2,7 +2,6 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.crud.user import get_user_by_wallet
 from app.models.project import Project
-from app.models.user import User
 from app.schemas.project import ProjectBase, ProjectCreate
 
 def create_project(wallet_address : str, db: Session, project: ProjectCreate):
