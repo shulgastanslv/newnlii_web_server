@@ -4,6 +4,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
+from app.schemas.category import CategoryOut
+
 
 class ProjectBase(BaseModel):
     name: str
@@ -47,6 +49,14 @@ class UserBase(BaseModel):
     description : Optional[str] = None
     projects : Optional[List[ProjectShort]] = None
 
+
+
+class Tag(BaseModel):
+    name : str
+    id : int
+
+
+
 class ProjectOut(ProjectBase):
     id: int
     image_url : str
@@ -60,5 +70,7 @@ class ProjectOut(ProjectBase):
     reviews_count : int
     is_favorite : bool
     owner: UserBase
+    tags  : List[Tag]
+    category : CategoryOut
     class Config:
         orm_mode = True

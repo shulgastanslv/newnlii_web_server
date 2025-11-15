@@ -7,8 +7,8 @@ from app.schemas.shared import UserBase
 
 class UserLogin(UserBase):
     wallet_address: str
-    signature: str
-    message: str
+    role : str
+    status : str
 
 class UserUpdate(BaseModel):
     role: Optional[str] = None

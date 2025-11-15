@@ -1,13 +1,14 @@
-from http.client import HTTPException
 from sqlalchemy.orm import Session
 from app.models.user import User
 from app.schemas.user import UserLogin, UserUpdate
+from fastapi import HTTPException
 
 def create_user(db: Session, user: UserLogin):
     db_user = User(
         wallet_address=user.wallet_address,
         name=user.name,
         role=user.role,
+        status=user.status,
         level=user.level,
         image_url=user.image_url,
     )
