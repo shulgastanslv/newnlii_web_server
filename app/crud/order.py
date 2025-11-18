@@ -33,3 +33,25 @@ def delete_order(db: Session, order_id: int):
     db.delete(order)
     db.commit()
     return {"detail": "Order deleted"}
+
+def get_order_by_project(db: Session, project_id: int):
+    order = (
+        db.query(Order)
+        .filter(Order.project_id == project_id)
+        .filter(Order.status == "open")
+        .first()
+    )
+    if not order:
+        raise HTTPException(status_code=404, detail="Open order not found for this project")
+    return order
+
+def update_order_status(db: Session, order_id: int, status: str, git_url: str = ""):
+    order = get_order_by_id(db, order_id)
+    if not order:
+        return None
+    order.status = status
+    if git_url:
+        order.git_url = git_url
+    db.commit()
+    db.refresh(order)
+    return order

@@ -26,5 +26,5 @@ class Skill(Base):
     projects = relationship(
         "Project",
         secondary=project_skills,
-        back_populates="skills"  # Обратная связь на свойство skills в Project
+        back_populates="skills"
     )

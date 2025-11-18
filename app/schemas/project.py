@@ -1,20 +1,36 @@
+from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel
-from app.schemas.shared import ProjectBase
+from pydantic import BaseModel, constr
+from app.schemas.category import CategoryOut
+from app.schemas.tag import Tag
+from app.schemas.user import UserBase
 
-class ProjectCreate(ProjectBase):
-    category_id: int
+class ProjectBase(BaseModel):
+    name: str
+    id : int
     image_url: str
-    budget: int
-    crypto_type : str
-    tags: Optional[List[str]] = []
-    skills: Optional[List[str]] = []
-
-class ProjectUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    image_url: Optional[str] = None
-    budget: Optional[int] = None
-    category_id: Optional[int] = None
+    category_id: int
+    description: str
+    budget: float
+    crypto_type: int
+    visible : bool
     tags: Optional[List[str]] = None
     skills: Optional[List[str]] = None
+    class Config:
+        orm_mode = True
+
+class ProjectCreate(ProjectBase):
+    pass
+
+class ProjectUpdate(BaseModel):
+    image_url: str
+    budget: float
+    category_id: int
+    tags: Optional[List[str]] = None
+    skills: Optional[List[str]] = None
+    visible: Optional[bool]
+
+class ProjectOut(ProjectBase):
+    owner: UserBase
+    category: CategoryOut
+

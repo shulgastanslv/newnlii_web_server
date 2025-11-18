@@ -1,14 +1,8 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
-from enum import Enum
-
-class OrderStatusEnum(str, Enum):
-    pending = "pending"
-    accepted = "accepted"
-    in_progress = "in_progress"
-    completed = "completed"
-    cancelled = "cancelled"
+from app.models.order import Status
+from app.schemas.project import ProjectOut
 
 class OrderBase(BaseModel):
     project_id: int
@@ -16,18 +10,18 @@ class OrderBase(BaseModel):
     developer_id: Optional[int] = None
     deadline : Optional[datetime] = None
     budget :int
-    status: Optional[OrderStatusEnum] = OrderStatusEnum.pending
+    status: Optional[Status] = Status.open
 
 class OrderCreate(OrderBase):
     pass
 
 class OrderUpdate(BaseModel):
-    status: Optional[OrderStatusEnum] = None
+    status: Optional[Status] = None
     developer_id: Optional[int] = None
 
 class OrderOut(OrderBase):
     id: int
     created_at: datetime
-
+    project : ProjectOut
     class Config:
         orm_mode = True

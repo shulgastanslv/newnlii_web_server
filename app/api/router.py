@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from app.api.v1 import project, skill, user, category, specialization, user_skills, user_specializations, order
-from app.api.deepseek import router as deepseek
+from app.api.v1 import project, skill, user, category, specialization, user_skills, user_specializations, order, project_review, favorite
+from app.api.mistral_AI import router as mistral
 
 api_router = APIRouter()
 api_router.include_router(user_skills.router, prefix="/user_skills", tags=["User-Skills"])
@@ -11,4 +11,6 @@ api_router.include_router(category.router, prefix="/categories", tags=["Categori
 api_router.include_router(skill.router, prefix="/skills", tags=["Skills"])
 api_router.include_router(specialization.router, prefix="/specializations", tags=["Specializations"])
 api_router.include_router(order.router, prefix="/orders", tags=["Orders"])
-api_router.include_router(deepseek.router, prefix="/deepseek", tags=["Deepseek"])
+api_router.include_router(mistral.router, prefix="/mistral", tags=["Mistral"])
+api_router.include_router(project_review.router, prefix="/project-reviews", tags=["Deepseek"])
+api_router.include_router(favorite.router, prefix="/favorites", tags=["Favorites"])

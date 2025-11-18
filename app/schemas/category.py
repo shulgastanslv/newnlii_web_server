@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class CategoryBase(BaseModel):
     name: str
-    parent_id: Optional[int] = None
+    parent_id: Optional[int]
 
 class CategoryCreate(CategoryBase):
     pass
