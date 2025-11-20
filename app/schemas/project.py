@@ -48,6 +48,7 @@ class ProjectUpdate(BaseModel):
 class ProjectOut(ProjectBase):
     owner: Optional[UserBase]
     category: Optional[CategoryOut] 
+    reviews_count: Optional[int] = None
     model_config = {
          "use_enum_values": True,
         "from_attributes" : True

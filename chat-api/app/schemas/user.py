@@ -3,8 +3,9 @@ from datetime import datetime
 
 
 class UserBase(BaseModel):
+    id: int
     username: str
-    email: str | None = None
+    wallet_address: str | None = None
 
 
 class UserCreate(UserBase):

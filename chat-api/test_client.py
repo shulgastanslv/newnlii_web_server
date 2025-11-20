@@ -8,8 +8,8 @@ import json
 import requests
 import time
 
-BASE_URL = "http://localhost:8000"
-WS_URL = "ws://localhost:8000"
+BASE_URL = "http://localhost:8010"
+WS_URL = "ws://localhost:8010"
 
 
 def create_users():
@@ -18,13 +18,13 @@ def create_users():
     
     user1 = requests.post(f"{BASE_URL}/users/", json={
         "username": "test_user1",
-        "email": "user1@test.com"
+        "wallet_address": "0x1234567890123456789012345678901234567890"
     }).json()
     print(f"Создан пользователь 1: {user1}")
     
     user2 = requests.post(f"{BASE_URL}/users/", json={
         "username": "test_user2",
-        "email": "user2@test.com"
+        "wallet_address": "0x0987654321098765432109876543210987654321"
     }).json()
     print(f"Создан пользователь 2: {user2}")
     

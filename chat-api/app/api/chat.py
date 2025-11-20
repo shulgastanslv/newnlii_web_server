@@ -9,8 +9,6 @@ from app.crud import user as crud_user
 
 router = APIRouter()
 
-# Хранилище активных WebSocket соединений
-# Структура: {chat_id: {user_id: websocket}}
 active_connections: dict[int, dict[int, WebSocket]] = {}
 
 
@@ -48,19 +46,16 @@ manager = ConnectionManager()
 
 @router.post("/chats/", response_model=ChatOut)
 def create_chat(chat: ChatCreate, db: Session = Depends(get_db)):
-    """Создать новый чат между двумя пользователями"""
     return crud_chat.create_chat(db, chat)
 
 
 @router.get("/chats/{chat_id}", response_model=ChatOut)
 def get_chat(chat_id: int, db: Session = Depends(get_db)):
-    """Получить чат по ID"""
     return crud_chat.get_chat_by_id(db, chat_id)
 
 
-@router.get("/chats/user/{user_id}", response_model=List[dict])
+@router.get("/chats/user/{user_id}", response_model=List[ChatListOut])
 def get_user_chats(user_id: int, db: Session = Depends(get_db)):
-    """Получить все чаты пользователя"""
     return crud_chat.get_user_chats(db, user_id)
 
 
@@ -71,23 +66,17 @@ def get_chat_messages(
     offset: int = 0,
     db: Session = Depends(get_db)
 ):
-    """Получить сообщения чата"""
     messages = crud_chat.get_chat_messages(db, chat_id, limit, offset)
     return list(reversed(messages))  # Возвращаем в хронологическом порядке
 
 
 @router.post("/chats/{chat_id}/read")
 def mark_as_read(chat_id: int, user_id: int, db: Session = Depends(get_db)):
-    """Отметить сообщения как прочитанные"""
     return crud_chat.mark_messages_as_read(db, chat_id, user_id)
 
 
 @router.websocket("/ws/{chat_id}/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, chat_id: int, user_id: int):
-    """
-    WebSocket endpoint для чата
-    Подключение: ws://localhost:8000/ws/{chat_id}/{user_id}
-    """
     await manager.connect(websocket, chat_id, user_id)
     
     # Проверяем существование пользователя и чата
@@ -97,7 +86,6 @@ async def websocket_endpoint(websocket: WebSocket, chat_id: int, user_id: int):
         user = crud_user.get_user_by_id(db, user_id)
         chat = crud_chat.get_chat_by_id(db, chat_id)
         
-        # Проверяем, что пользователь является участником чата
         if chat.user1_id != user_id and chat.user2_id != user_id:
             await websocket.close(code=1008, reason="User is not a participant of this chat")
             return

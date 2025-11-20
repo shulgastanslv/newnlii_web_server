@@ -1,15 +1,14 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+
 from app.db.session import engine
 from app.db.base import Base
 from app.api import chat, users
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-# Создаем таблицы в БД
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Chat API",
-    description="Chat API with WebSocket support using FastAPI and SQLite",
     version="1.0.0"
 )
 
@@ -29,10 +28,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Подключаем роутеры
 app.include_router(chat.router, tags=["Chat"])
 app.include_router(users.router, tags=["Users"])
-
 
 @app.get("/")
 def root():

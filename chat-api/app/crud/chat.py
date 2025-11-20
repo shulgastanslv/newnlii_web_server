@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
 from app.models.chat import Chat, Message
 from app.models.user import User
-from app.schemas.chat import ChatCreate, MessageCreate
+from app.schemas.chat import ChatCreate, MessageCreate, MessageOut, ChatListOut
 from app.schemas.user import UserOut
 from fastapi import HTTPException
 from typing import List, Optional
@@ -38,7 +38,7 @@ def get_chat_by_users(db: Session, user1_id: int, user2_id: int):
     ).first()
 
 
-def get_user_chats(db: Session, user_id: int):
+def get_user_chats(db: Session, user_id: int) -> List[ChatListOut]:
     """Получить все чаты пользователя с последним сообщением"""
     chats = db.query(Chat).filter(
         or_(Chat.user1_id == user_id, Chat.user2_id == user_id)
@@ -59,16 +59,20 @@ def get_user_chats(db: Session, user_id: int):
         other_user_id = chat.user2_id if chat.user1_id == user_id else chat.user1_id
         other_user = db.query(User).filter(User.id == other_user_id).first()
         
-        result.append({
-            "id": chat.id,
-            "user1_id": chat.user1_id,
-            "user2_id": chat.user2_id,
-            "created_at": chat.created_at,
-            "updated_at": chat.updated_at,
-            "last_message": last_message,
-            "unread_count": unread_count,
-            "other_user": other_user
-        })
+        # Convert SQLAlchemy models to Pydantic schemas
+        last_message_out = MessageOut.model_validate(last_message) if last_message else None
+        other_user_out = UserOut.model_validate(other_user) if other_user else None
+        
+        result.append(ChatListOut(
+            id=chat.id,
+            user1_id=chat.user1_id,
+            user2_id=chat.user2_id,
+            created_at=chat.created_at,
+            updated_at=chat.updated_at,
+            last_message=last_message_out,
+            unread_count=unread_count,
+            other_user=other_user_out
+        ))
     
     return result
 
