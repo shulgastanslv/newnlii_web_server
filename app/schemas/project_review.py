@@ -16,5 +16,6 @@ class ProjectReviewOut(BaseModel):
     text: str
     created_at: datetime
     user : UserOut
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }

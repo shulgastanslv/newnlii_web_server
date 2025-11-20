@@ -9,5 +9,6 @@ class SkillCreate(SkillBase):
 
 class SkillOut(SkillBase):
     id: int
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }

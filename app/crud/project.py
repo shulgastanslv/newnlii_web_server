@@ -1,12 +1,14 @@
+import json
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from app.crud.user import get_user_by_wallet
 from app.models.project import Project
-from app.schemas.project import ProjectCreate, ProjectUpdate
-
+from app.models.skill import Skill
+from app.models.tag import Tag
+from app.schemas.project import ProjectCreate, ProjectOut, ProjectUpdate
+from app.redis_client import redis_client
 
 def create_project(wallet_address: str, db: Session, project: ProjectCreate):
-    print("Project creating ...")
     user = get_user_by_wallet(db, wallet_address)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -18,22 +20,44 @@ def create_project(wallet_address: str, db: Session, project: ProjectCreate):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Project description cannot be empty")
     if project.category_id <= 0:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid category ID")
-    if not project.image_url.strip():
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Image URL cannot be empty")
     if project.budget < 0:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Budget cannot be negative")
     if project.crypto_type < 0 or project.crypto_type == None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Crypto type cannot be empty")
 
+    # Fetch skills and tags from database if provided
+    skills = []
+    if project.skills:
+        skills = db.query(Skill).filter(Skill.id.in_(project.skills)).all()
+        if len(skills) != len(project.skills):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="One or more skill IDs are invalid")
+    print(skills)
+    tags = []
+    if project.tags:
+        tags = db.query(Tag).filter(Tag.id.in_(project.tags)).all()
+        if len(tags) != len(project.tags):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="One or more tag IDs are invalid")
+
     new_project = Project(
         name=project.name.strip(),
         description=project.description.strip(),
         category_id=project.category_id,
-        image_url=project.image_url.strip(),
         budget=project.budget,
         owner_id=user.id,
-        crypto_type=project.crypto_type
+        crypto_type=project.crypto_type,
+        visible=project.visible,
+        short_description=project.short_description,
+        estimated_duration=project.estimated_duration,
+        features=project.features,
+        external_links=project.external_links,
+        packages=project.packages,
+        moderation_status=project.moderation_status,
+        video_url=project.video_url
     )
+    
+    new_project.skills = skills
+    new_project.tags = tags
+    
     db.add(new_project)
     db.commit()
     db.refresh(new_project)
@@ -42,6 +66,17 @@ def create_project(wallet_address: str, db: Session, project: ProjectCreate):
 
 def get_all_projects(db: Session):
     return db.query(Project).all()
+
+def get_all_projects_cached(db: Session):
+    cached_projects = redis_client.get("all_projects")
+    if cached_projects:
+        projects_data  = json.loads(cached_projects)
+        return [ProjectOut(**pd) for pd in projects_data] 
+    projects = db.query(Project).all()
+    response = [ProjectOut.from_orm(project) for project in projects] 
+    json_data = json.dumps([item.dict() for item in response])
+    redis_client.set("all_projects", json_data, ex=300) 
+    return projects
 
 
 def get_project_by_id(db: Session, project_id: int):
@@ -58,7 +93,6 @@ def update_project(db: Session, project_id: int, project_update: ProjectUpdate):
 
     update_data = project_update.dict(exclude_unset=True)
 
-    # Validate fields if present
     if "name" in update_data and update_data["name"] is not None:
         if not update_data["name"].strip():
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Project name cannot be empty")

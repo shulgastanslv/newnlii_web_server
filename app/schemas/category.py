@@ -10,7 +10,7 @@ class CategoryCreate(CategoryBase):
 
 class CategoryOut(CategoryBase):
     id: int
-    subcategories: List[CategoryBase]
+    subcategories: List['CategoryOut'] = []
+    model_config = {"from_attributes": True}
 
-    class Config:
-        orm_mode = True
+CategoryOut.model_rebuild()

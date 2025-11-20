@@ -23,5 +23,6 @@ class OrderOut(OrderBase):
     id: int
     created_at: datetime
     project : ProjectOut
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }

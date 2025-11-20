@@ -1,1 +1,0 @@
-.\chat-api\run.bat

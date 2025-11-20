@@ -31,6 +31,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
 
 @router.patch("/{wallet_address}", response_model=UserOut)
 def update_user(wallet_address: str, update_data: UserUpdate, db: Session = Depends(get_db)):
+    print(update_data)
     return crud_user.update_user(db, wallet_address, update_data)
 
 @router.patch("/{wallet_address}/role", response_model=UserOut)

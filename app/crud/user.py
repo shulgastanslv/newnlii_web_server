@@ -97,7 +97,16 @@ def update_user(db: Session, wallet_address: str, update_data: UserUpdate):
             user.image_url = update_data.image_url
         if update_data.name is not None:
             user.name = update_data.name
-
+        if update_data.banner_url is not None:
+            user.banner_url = update_data.banner_url
+        if update_data.description is not None:
+            user.description = update_data.description
+        if update_data.region is not None:
+            user.region = update_data.region
+        if update_data.timezone is not None:
+            user.timezone = update_data.timezone
+        if update_data.status is not None:
+            user.status = update_data.status
         db.commit()
         db.refresh(user)
         return user

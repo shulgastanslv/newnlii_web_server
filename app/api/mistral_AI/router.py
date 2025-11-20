@@ -1,9 +1,8 @@
 import json
-import os
 from fastapi import APIRouter
 from pydantic import BaseModel
-from app.schemas.project import ProjectOut
 from mistralai import Mistral
+from app.api.mistral_AI.prompt import PROMPT_TEMPLATE
 
 router = APIRouter()
 
@@ -11,44 +10,33 @@ class Request(BaseModel):
     user_description: str
 
 class Result(BaseModel):
-    category_id : int
-    image_url : str
-    budget : int
-    name : str
-    description : str
-    crypto_type : str
+    category_id: int
+    image_url: str
+    budget: float
+    name: str
+    description: str
+    crypto_type: str
 
+def generate_prompt(user_description):
+    prompt = PROMPT_TEMPLATE.format(user_description=user_description)
+    return prompt
 
 @router.post("/generate-project", response_model=Result)
 async def generate_project(user_input: Request):
-    prompt = f"""
-    На основе следующего описания пользователя:
-    "{user_input.user_description}"
-    Сгенерируй JSON объект проекта со следующими полями:
-    - category_id: число от 1 до 10
-    - image_url: строка (ссылка на изображение)
-    - budget: число
-    - name: название проекта
-    - description: описание проекта
-    - crypto_type: ETH или BTC
-    Только JSON, без лишнего текста.
-    """
-    with Mistral(
-    api_key="NoEPfEdSdUQ7tPsM4CijBlKbmMTQw6Yb",
-) as mistral:
-
-        res = mistral.chat.complete(model="mistral-small-latest", messages=[
+    prompt = generate_prompt(user_description=user_input.user_description)
+    with Mistral(api_key="NoEPfEdSdUQ7tPsM4CijBlKbmMTQw6Yb") as mistral:
+        res = mistral.chat.complete(model="ministral-3b-2410", messages=[
             {
                 "content": prompt,
                 "role": "user",
             },
         ], stream=False)
 
-        without_syymbols = res.choices[0].message.content.strip("```")
-        result = without_syymbols.strip("json")
-        print(result)
+        raw_content = res.choices[0].message.content.strip("` \n")
+        if raw_content.startswith("json"):
+            raw_content = raw_content[4:].strip("` \n")
         try:
-            project_data = json.loads(result)
+            project_data = json.loads(raw_content)
         except json.JSONDecodeError:
             project_data = {
                 "category_id": 1,
@@ -58,5 +46,4 @@ async def generate_project(user_input: Request):
                 "description": user_input.user_description,
                 "crypto_type": "ETH"
             }
-
         return project_data

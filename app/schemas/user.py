@@ -7,9 +7,13 @@ from app.schemas.skill import SkillOut
 class ProjectShort(BaseModel):
     id: int
     name: str
+    category_id: int
+    description: str
+    budget: float
+    crypto_type: int
+    visible : bool
+    model_config = {"from_attributes": True}
 
-    class Config:
-        orm_mode = True
 
 class UserBase(BaseModel):
     wallet_address: str
@@ -27,6 +31,10 @@ class UserBase(BaseModel):
     verified: bool = False
     description: Optional[str] = "No description"
     projects: Optional[List[ProjectShort]] = None
+    model_config = {
+            "use_enum_values": True,
+        "from_attributes": True
+        }
 
 
 class UserCreate(UserBase):
@@ -38,11 +46,17 @@ class UserUpdate(BaseModel):
     role: Optional[str] = None
     level: Optional[int] = None
     image_url: Optional[str] = None
+    banner_url: Optional[str] = None
+    description: Optional[str] = None
+    region: Optional[str] = None
+    timezone: Optional[str] = None
+    status: Optional[str] = None
+    
     name: Optional[str] = None
 
 class UserOut(UserBase):
     id: int
     created_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
+

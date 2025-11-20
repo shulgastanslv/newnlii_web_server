@@ -29,8 +29,9 @@ class User(Base):
     timezone = Column(String, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
-
-    completed_orders = Column(Integer, nullable=False,default=0)
+    orders_count = Column(Integer, default=0, nullable=False)
+    completed_orders_count = Column(Integer, default=0, nullable=False)
+    favorites_count = Column(Integer, default=0, nullable=False)
     repeat_orders = Column(Integer,nullable=False, default=0)
     rating = Column(Float, nullable=False, default=0.0)
     verified = Column(Boolean,nullable=False, default=False)

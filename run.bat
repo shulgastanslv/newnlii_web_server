@@ -1,1 +1,3 @@
+@echo off
+echo Starting Chat API Server...
 fastapi dev .\app\main.py
