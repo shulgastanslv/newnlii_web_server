@@ -38,7 +38,7 @@ def login_or_create_user(wallet_address: str, db: Session):
     user_in = UserCreate(
         wallet_address=wallet_address,
         role=UserRole.developer,
-        name=f'User: {wallet_address}',
+        name=f'{wallet_address}',
         status=UserStatus.online,
     )
     user = create_user(db, user_in)

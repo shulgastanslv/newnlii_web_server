@@ -26,46 +26,45 @@ def get_all_projects(
     sort: Optional[str] = None,
 ):
     
-    return crud_project.get_all_projects_cached(db)
-    # q = db.query(Project)
+    q = db.query(Project)
 
-    # if query:
-    #     like_query = f"%{query}%"
-    #     q = q.filter(or_(Project.name.ilike(like_query), Project.description.ilike(like_query)))
+    if query:
+        like_query = f"%{query}%"
+        q = q.filter(or_(Project.name.ilike(like_query), Project.description.ilike(like_query)))
 
-    # if user_id:
-    #     q = q.filter(Project.owner_id == user_id)
+    if user_id:
+        q = q.filter(Project.owner_id == user_id)
 
-    # if category and category.lower() != "all":
-    #     q = q.join(Project.category).filter(Category.name == category)
+    if category and category.lower() != "all":
+        q = q.join(Project.category).filter(Category.name == category)
 
-    # if seller:
-    #     q = q.join(Project.owner)
-    #     if seller == "top":
-    #         q = q.filter(User.rating != None)
-    #     elif seller == "verified":
-    #         q = q.filter(User.verified == True)
+    if seller:
+        q = q.join(Project.owner)
+        if seller == "top":
+            q = q.filter(User.rating != None)
+        elif seller == "verified":
+            q = q.filter(User.verified == True)
 
-    # if budget:
-    #     try:
-    #         if budget.endswith(">"):
-    #             amount = int(budget[:-1])
-    #             q = q.filter(Project.budget > amount)
-    #         else:
-    #             amount = int(budget)
-    #             q = q.filter(Project.budget <= amount)
-    #     except ValueError:
-    #         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid budget filter")
+    if budget:
+        try:
+            if budget.endswith(">"):
+                amount = int(budget[:-1])
+                q = q.filter(Project.budget > amount)
+            else:
+                amount = int(budget)
+                q = q.filter(Project.budget <= amount)
+        except ValueError:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid budget filter")
 
-    # if sort:
-    #     if sort == "budget_asc":
-    #         q = q.order_by(Project.budget.asc())
-    #     elif sort == "budget_desc":
-    #         q = q.order_by(Project.budget.desc())
-    #     elif sort == "newest":
-    #         q = q.order_by(Project.created_at.desc())
+    if sort:
+        if sort == "budget_asc":
+            q = q.order_by(Project.budget.asc())
+        elif sort == "budget_desc":
+            q = q.order_by(Project.budget.desc())
+        elif sort == "newest":
+            q = q.order_by(Project.created_at.desc())
 
-    # return q.all()
+    return q.all()
 
 @router.get("/{project_id}", response_model=ProjectOut)
 def get_project(project_id: int, db: Session = Depends(get_db)):

@@ -36,7 +36,9 @@ class User(Base):
     rating = Column(Float, nullable=False, default=0.0)
     verified = Column(Boolean,nullable=False, default=False)
     
-    user_reviews = relationship('ProjectReview', backref='user')
+    user_reviews = relationship('ProjectReview', backref='user')  # Отзывы на проекты, которые оставил пользователь
+    reviews_received = relationship('UserReview', foreign_keys='UserReview.reviewed_user_id', back_populates='reviewed_user')  # Отзывы, полученные пользователем
+    reviews_given = relationship('UserReview', foreign_keys='UserReview.reviewer_id', back_populates='reviewer')  # Отзывы, оставленные пользователем
     skills = relationship("Skill", secondary="user_skills", back_populates="users")
     specializations = relationship("Specialization", secondary="user_specializations", back_populates="users")
     projects = relationship("Project", back_populates="owner")

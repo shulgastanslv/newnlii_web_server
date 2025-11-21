@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1 import project, skill, user, category, specialization, user_skills, user_specializations, order, project_review, favorite, project_image, redis_cache
+from app.api.v1 import project, skill, user, category, specialization, user_skills, user_specializations, order, project_review, user_review, favorite, project_image, redis_cache
 from app.api.mistral_AI import router as mistral
 
 api_router = APIRouter()
@@ -13,6 +13,7 @@ api_router.include_router(specialization.router, prefix="/specializations", tags
 api_router.include_router(order.router, prefix="/orders", tags=["Orders"])
 api_router.include_router(mistral.router, prefix="/mistral", tags=["Mistral"])
 api_router.include_router(project_review.router, prefix="/project-reviews", tags=["Project Reviews"])
+api_router.include_router(user_review.router, prefix="/user-reviews", tags=["User Reviews"])
 api_router.include_router(favorite.router, prefix="/favorites", tags=["Favorites"])
 api_router.include_router(project_image.router, prefix="/project-images", tags=["Project Images"])
 api_router.include_router(redis_cache.router, prefix="/cache", tags=["Redis Cache"])

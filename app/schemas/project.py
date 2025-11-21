@@ -4,7 +4,8 @@ from pydantic import BaseModel, constr
 from app.schemas.category import CategoryOut
 from app.schemas.skill import SkillOut
 from app.schemas.tag import Tag
-from app.schemas.user import UserBase
+from app.schemas.user import UserOut
+
 
 class ProjectBase(BaseModel):
     name: str
@@ -46,7 +47,7 @@ class ProjectUpdate(BaseModel):
     }
 
 class ProjectOut(ProjectBase):
-    owner: Optional[UserBase]
+    owner: Optional[UserOut]
     category: Optional[CategoryOut] 
     reviews_count: Optional[int] = None
     model_config = {

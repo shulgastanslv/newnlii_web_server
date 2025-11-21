@@ -1,6 +1,6 @@
 import json
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.crud.user import get_user_by_wallet
 from app.models.project import Project
 from app.models.skill import Skill
@@ -70,13 +70,22 @@ def get_all_projects(db: Session):
 def get_all_projects_cached(db: Session):
     cached_projects = redis_client.get("all_projects")
     if cached_projects:
-        projects_data  = json.loads(cached_projects)
-        return [ProjectOut(**pd) for pd in projects_data] 
-    projects = db.query(Project).all()
+        try:
+            projects_data = json.loads(cached_projects)
+            return [ProjectOut(**pd) for pd in projects_data]
+        except (json.JSONDecodeError, ValueError, TypeError) as e:
+            # If cached data is corrupted or incomplete, invalidate cache and query from DB
+            redis_client.delete("all_projects")
+    
+    # Eagerly load owner and category relationships to ensure all required fields are available
+    projects = db.query(Project).options(
+        joinedload(Project.owner),
+        joinedload(Project.category)
+    ).all()
     response = [ProjectOut.from_orm(project) for project in projects] 
-    json_data = json.dumps([item.dict() for item in response])
+    json_data = json.dumps([item.dict() for item in response], default=str)
     redis_client.set("all_projects", json_data, ex=300) 
-    return projects
+    return response
 
 
 def get_project_by_id(db: Session, project_id: int):

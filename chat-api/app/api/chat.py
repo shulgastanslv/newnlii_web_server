@@ -38,8 +38,12 @@ class ConnectionManager:
         if chat_id in self.active_connections:
             for user_id, websocket in self.active_connections[chat_id].items():
                 if user_id != exclude_user_id:
-                    await websocket.send_json(message)
-
+                    # Проверяем, что соединение открыто
+                        try:
+                            await websocket.send_json(message)
+                        except RuntimeError:
+                            # Соединение закрыто, удаляем из активных
+                            del self.active_connections[chat_id][user_id]
 
 manager = ConnectionManager()
 
@@ -88,9 +92,11 @@ async def websocket_endpoint(websocket: WebSocket, chat_id: int, user_id: int):
         
         if chat.user1_id != user_id and chat.user2_id != user_id:
             await websocket.close(code=1008, reason="User is not a participant of this chat")
+            manager.disconnect(chat_id, user_id)  # Убрать из менеджера перед закрытием
             return
     except HTTPException:
         await websocket.close(code=1008, reason="Chat or user not found")
+        manager.disconnect(chat_id, user_id)  # Убрать из менеджера перед закрытием
         return
     finally:
         db.close()

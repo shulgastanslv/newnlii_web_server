@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, Enum, Text, func
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, Enum, Text, func, Float
 from sqlalchemy.orm import relationship
 from app.db.base import Base
 import enum
@@ -22,7 +22,7 @@ class Order(Base):
     developer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     status = Column(Enum(Status, name="status_enum"), default=Status.open, nullable=False)
     created_at = Column(DateTime, server_default=func.now())
-    budget = Column(Integer, nullable=True)
+    budget = Column(Float, nullable=True)
     deadline = Column(DateTime, nullable=True)
     git_url = Column(Text, nullable=True)
     project = relationship("Project", backref="orders")

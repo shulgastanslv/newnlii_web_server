@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from app.api.deps import get_db
-from app.models.order import Order
+from app.models.order import Order, Status
 from app.schemas.order import OrderCreate, OrderOut, OrderUpdate
 from app.crud import order as crud_order
 
@@ -40,13 +40,25 @@ def deliver_order(order_id: int, git_url: str = "", db: Session = Depends(get_db
         raise HTTPException(status_code=404, detail="Order not found")
     return crud_order.update_order_status(db, order_id, status="completed", git_url=git_url)
 
-# Оплата заказа - заказчик
-@router.post("/{order_id}/pay", response_model=OrderOut)
-def pay_order(order_id: int, db: Session = Depends(get_db)):
+# Оплата заказа - заказчик (создание платежа через NOWPayments)
+@router.post("/{order_id}/pay")
+async def pay_order(
+    order_id: int, 
+    db: Session = Depends(get_db)
+):
     order = crud_order.get_order_by_id(db, order_id)
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    return crud_order.update_order_status(db, order_id, status="paid")
+    
+    # Проверяем, что заказ еще не оплачен
+    if order.status == Status.paid:
+        raise HTTPException(status_code=400, detail="Order is already paid")
+    
+    if not order.budget:
+        raise HTTPException(status_code=400, detail="Order budget is not set")
+
+    
+    
 
 # Приятие работы - заказчик
 @router.post("/{order_id}/accept", response_model=OrderOut)

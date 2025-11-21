@@ -16,6 +16,7 @@ class ProjectShort(BaseModel):
 
 
 class UserBase(BaseModel):
+    id : Optional[int] = None
     wallet_address: str
     name: str
     role: Optional[UserRole] = UserRole.developer
@@ -31,6 +32,7 @@ class UserBase(BaseModel):
     verified: bool = False
     description: Optional[str] = "No description"
     projects: Optional[List[ProjectShort]] = None
+    skills: Optional[List[SkillOut]] = None
     model_config = {
             "use_enum_values": True,
         "from_attributes": True

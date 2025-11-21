@@ -32,11 +32,11 @@ def refresh_projects_cache(db: Session):
     try:
         # Пробуем использовать from_orm (Pydantic v1)
         response = [ProjectOut.from_orm(project) for project in projects]
-        json_data = json.dumps([item.dict() for item in response])
+        json_data = json.dumps([item.dict() for item in response], default=str)
     except AttributeError:
         # Если from_orm не доступен, используем model_validate (Pydantic v2)
         response = [ProjectOut.model_validate(project) for project in projects]
-        json_data = json.dumps([item.model_dump() for item in response])
+        json_data = json.dumps([item.model_dump() for item in response], default=str)
     redis_client.set("all_projects", json_data, ex=300)
     return {"detail": f"Projects cache refreshed with {len(projects)} projects"}
 
@@ -44,7 +44,7 @@ def refresh_categories_cache(db: Session):
     """Перезаписать кеш категорий из базы данных"""
     categories = db.query(Category).all()
     response = [CategoryOut.model_validate(category) for category in categories]
-    json_data = json.dumps([item.model_dump() for item in response])
+    json_data = json.dumps([item.model_dump() for item in response], default=str)
     redis_client.set("all_categories", json_data, ex=300)
     return {"detail": f"Categories cache refreshed with {len(categories)} categories"}
 

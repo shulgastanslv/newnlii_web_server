@@ -8,6 +8,7 @@ from app.models.skill import *
 from app.models.tag import *
 from app.models.specialization import *
 from app.models.project_review import *
+from app.models.user_review import *
 from app.models.favorite import *
 from app.models.project_image import *
 Base.metadata.create_all(bind=engine)
