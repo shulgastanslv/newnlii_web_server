@@ -78,3 +78,13 @@ def update_project(project_id: int, project_update: ProjectUpdate, db: Session =
 def delete_project(project_id: int, db: Session = Depends(get_db)):
     crud_project.delete_project(db, project_id)
     return {"detail": "Project deleted successfully"}
+
+
+
+@router.post("/views/{project_id}", response_model=bool)
+def add_view(project_id: int, db: Session = Depends(get_db)):
+    return crud_project.add_view(db, project_id)
+
+@router.get("/views/{project_id}", response_model=int)
+def get_views(project_id: int, db: Session = Depends(get_db)):
+    return crud_project.get_views(db, project_id)

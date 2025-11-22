@@ -6,6 +6,10 @@ from app.schemas.project_review import ProjectReviewCreate
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
+
+def has_review(db: Session, project_id: int, user_id: int):
+    return db.query(ProjectReview).filter(ProjectReview.project_id == project_id, ProjectReview.user_id == user_id).first() is not None
+
 def create_project_review(db: Session, review_in: ProjectReviewCreate):
     """Создать отзыв на проект"""
     # Проверяем существование проекта

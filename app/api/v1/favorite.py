@@ -18,3 +18,12 @@ def remove_favorite(project_id: int, user_id: int, db: Session = Depends(get_db)
 @router.get("/", response_model=List[FavoriteOut])
 def get_user_favorites(user_id: int, db: Session = Depends(get_db)):
     return crud_favorite.get_favorites_by_user(db, user_id=user_id)
+
+@router.get("/favorites_count/{project_id}", response_model=int)
+def get_favorites_count(project_id: int, db: Session = Depends(get_db)):
+    return crud_favorite.get_favorites_count(db, project_id=project_id)
+
+
+@router.get("/is_favorite/{project_id}", response_model=bool)
+def is_favorite(project_id: int, user_id: int, db: Session = Depends(get_db)):
+    return crud_favorite.is_favorite(db, project_id=project_id, user_id=user_id)

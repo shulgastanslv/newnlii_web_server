@@ -18,9 +18,11 @@ class ProjectBase(BaseModel):
     tags: Optional[List[Tag]] = None
     skills: Optional[List[SkillOut]] = None
     short_description: Optional[str] = None
-    estimated_duration: Optional[str] = None
+    estimated_duration: Optional[str] = None    
     features: Optional[str] = None
+    is_favorite: Optional[bool] = None
     external_links: Optional[str] = None
+    created_at: Optional[datetime] = None
     packages: Optional[str] = None
     moderation_status: Optional[str] = None
     video_url: Optional[str] = None

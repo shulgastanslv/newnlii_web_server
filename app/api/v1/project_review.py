@@ -29,3 +29,7 @@ def get_all_reviews(project_id: int, db: Session = Depends(get_db)):
     """Получить все отзывы проекта"""
     reviews = project_review.get_reviews_by_project(db, project_id)
     return reviews
+
+@router.get("/has_review/{project_id}/{user_id}", response_model=bool)
+def has_review(project_id: int, user_id: int, db: Session = Depends(get_db)):
+    return project_review.has_review(db, project_id, user_id)

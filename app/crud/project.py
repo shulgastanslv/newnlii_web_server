@@ -8,6 +8,23 @@ from app.models.tag import Tag
 from app.schemas.project import ProjectCreate, ProjectOut, ProjectUpdate
 from app.redis_client import redis_client
 
+
+def add_view(db: Session, project_id: int):
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+    project.views_count += 1
+    db.add(project)
+    db.commit()
+    db.refresh(project)
+    return True 
+
+def get_views(db: Session, project_id: int):
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+    return project.views_count
+
 def create_project(wallet_address: str, db: Session, project: ProjectCreate):
     user = get_user_by_wallet(db, wallet_address)
     if not user:
