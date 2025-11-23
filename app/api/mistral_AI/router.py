@@ -4,6 +4,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from mistralai import Mistral
 from app.api.mistral_AI.prompt import PROMPT_TEMPLATE, ASK_AI_PROMPT_TEMPLATE
+from app.core.config import settings
 
 router = APIRouter()
 
