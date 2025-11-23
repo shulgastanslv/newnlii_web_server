@@ -34,7 +34,7 @@ def delete_order(order_id: int, db: Session = Depends(get_db)):
 
 # Сдача работы - разработчик
 @router.post("/{order_id}/deliver", response_model=OrderOut)
-def deliver_order(order_id: int, git_url: str = "", db: Session = Depends(get_db)):
+def deliver_order(order_id: int, git_url: str, db: Session = Depends(get_db)):
     order = crud_order.get_order_by_id(db, order_id)
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")

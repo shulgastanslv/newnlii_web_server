@@ -11,4 +11,5 @@ from app.models.project_review import *
 from app.models.user_review import *
 from app.models.favorite import *
 from app.models.project_image import *
+from app.models.transaction import *
 Base.metadata.create_all(bind=engine)

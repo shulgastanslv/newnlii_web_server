@@ -22,6 +22,7 @@ class OrderUpdate(BaseModel):
 
 class OrderOut(OrderBase):
     id: int
+    git_url: Optional[str] = None
     created_at: datetime
     project : ProjectOut
     client : UserOut
