@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from sqlalchemy.orm import Session
 from app.redis_client import redis_client
 from app.models.project import Project
@@ -41,12 +42,24 @@ def refresh_projects_cache(db: Session):
     return {"detail": f"Projects cache refreshed with {len(projects)} projects"}
 
 def refresh_categories_cache(db: Session):
-    """Перезаписать кеш категорий из базы данных"""
-    categories = db.query(Category).all()
-    response = [CategoryOut.model_validate(category) for category in categories]
-    json_data = json.dumps([item.model_dump() for item in response], default=str)
-    redis_client.set("all_categories", json_data, ex=300)
-    return {"detail": f"Categories cache refreshed with {len(categories)} categories"}
+    """Перезаписать кеш категорий из JSON файла"""
+    # Определяем путь к файлу categories.json в корне проекта
+    project_root = Path(__file__).parent.parent.parent
+    categories_file = project_root / "categories.json"
+    
+    try:
+        with open(categories_file, 'r', encoding='utf-8') as f:
+            categories_data = json.load(f)
+        
+        # Преобразуем данные из JSON в CategoryOut объекты
+        response = [CategoryOut(**category) for category in categories_data]
+        json_data = json.dumps([item.model_dump() for item in response], default=str)
+        redis_client.set("all_categories", json_data, ex=300)
+        return {"detail": f"Categories cache refreshed with {len(response)} categories"}
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Файл categories.json не найден по пути: {categories_file}")
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Ошибка при чтении JSON файла: {e}")
 
 def refresh_all_cache(db: Session):
     """Перезаписать весь кеш из базы данных"""

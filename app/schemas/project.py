@@ -5,6 +5,7 @@ from app.schemas.category import CategoryOut
 from app.schemas.skill import SkillOut
 from app.schemas.tag import Tag
 from app.schemas.user import UserOut
+from app.schemas.project_image import ProjectImageOut
 
 
 class ProjectBase(BaseModel):
@@ -52,6 +53,7 @@ class ProjectOut(ProjectBase):
     owner: Optional[UserOut]
     category: Optional[CategoryOut] 
     reviews_count: Optional[int] = None
+    images: Optional[List[ProjectImageOut]] = None
     model_config = {
          "use_enum_values": True,
         "from_attributes" : True

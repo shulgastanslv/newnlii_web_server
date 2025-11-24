@@ -1,9 +1,10 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from app.models.order import Status
 from app.schemas.project import ProjectOut
 from app.schemas.user import UserOut
+from app.schemas.project_image import ProjectImageOut
 
 class OrderBase(BaseModel):
     project_id: int

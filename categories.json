@@ -1,0 +1,746 @@
+[
+  {
+    "id": 1,
+    "name": "Graphics & Design",
+    "parent_id": null,
+    "subcategories": []
+  },
+  {
+    "id": 2,
+    "name": "Digital Marketing",
+    "parent_id": null,
+    "subcategories": []
+  },
+  {
+    "id": 3,
+    "name": "Writing & Translation",
+    "parent_id": null,
+    "subcategories": []
+  },
+  {
+    "id": 4,
+    "name": "Video & Animation",
+    "parent_id": null,
+    "subcategories": []
+  },
+  {
+    "id": 5,
+    "name": "Music & Audio",
+    "parent_id": null,
+    "subcategories": []
+  },
+  {
+    "id": 6,
+    "name": "Programming & Tech",
+    "parent_id": null,
+    "subcategories": []
+  },
+  {
+    "id": 7,
+    "name": "Business",
+    "parent_id": null,
+    "subcategories": []
+  },
+  {
+    "id": 8,
+    "name": "Lifestyle",
+    "parent_id": null,
+    "subcategories": []
+  },
+  {
+    "id": 9,
+    "name": "Data",
+    "parent_id": null,
+    "subcategories": []
+  },
+  {
+    "id": 10,
+    "name": "Photography",
+    "parent_id": null,
+    "subcategories": []
+  },
+  {
+    "id": 11,
+    "name": "AI Services",
+    "parent_id": null,
+    "subcategories": []
+  },
+  {
+    "id": 12,
+    "name": "Logo Design",
+    "parent_id": 1,
+    "subcategories": []
+  },
+  {
+    "id": 13,
+    "name": "Brand Style Guides",
+    "parent_id": 1,
+    "subcategories": []
+  },
+  {
+    "id": 14,
+    "name": "Game Art",
+    "parent_id": 1,
+    "subcategories": []
+  },
+  {
+    "id": 15,
+    "name": "Graphics for Streamers",
+    "parent_id": 1,
+    "subcategories": []
+  },
+  {
+    "id": 16,
+    "name": "Web & App Design",
+    "parent_id": 1,
+    "subcategories": []
+  },
+  {
+    "id": 17,
+    "name": "Visual Design",
+    "parent_id": 1,
+    "subcategories": []
+  },
+  {
+    "id": 18,
+    "name": "Print Design",
+    "parent_id": 1,
+    "subcategories": []
+  },
+  {
+    "id": 19,
+    "name": "Packaging & Covers",
+    "parent_id": 1,
+    "subcategories": []
+  },
+  {
+    "id": 20,
+    "name": "Architecture & Building Design",
+    "parent_id": 1,
+    "subcategories": []
+  },
+  {
+    "id": 21,
+    "name": "Product & Industrial Design",
+    "parent_id": 1,
+    "subcategories": []
+  },
+  {
+    "id": 22,
+    "name": "Fashion Design",
+    "parent_id": 1,
+    "subcategories": []
+  },
+  {
+    "id": 23,
+    "name": "Portraits & Caricatures",
+    "parent_id": 1,
+    "subcategories": []
+  },
+  {
+    "id": 24,
+    "name": "Cartoons & Comics",
+    "parent_id": 1,
+    "subcategories": []
+  },
+  {
+    "id": 25,
+    "name": "Social Media Design",
+    "parent_id": 1,
+    "subcategories": []
+  },
+  {
+    "id": 26,
+    "name": "NFT Art",
+    "parent_id": 1,
+    "subcategories": []
+  },
+  {
+    "id": 27,
+    "name": "Social Media Marketing",
+    "parent_id": 2,
+    "subcategories": []
+  },
+  {
+    "id": 28,
+    "name": "SEO",
+    "parent_id": 2,
+    "subcategories": []
+  },
+  {
+    "id": 29,
+    "name": "Social Media Advertising",
+    "parent_id": 2,
+    "subcategories": []
+  },
+  {
+    "id": 30,
+    "name": "Content Marketing",
+    "parent_id": 2,
+    "subcategories": []
+  },
+  {
+    "id": 31,
+    "name": "Video Marketing",
+    "parent_id": 2,
+    "subcategories": []
+  },
+  {
+    "id": 32,
+    "name": "Email Marketing",
+    "parent_id": 2,
+    "subcategories": []
+  },
+  {
+    "id": 33,
+    "name": "Crowdfunding",
+    "parent_id": 2,
+    "subcategories": []
+  },
+  {
+    "id": 34,
+    "name": "Influencer Marketing",
+    "parent_id": 2,
+    "subcategories": []
+  },
+  {
+    "id": 35,
+    "name": "Community Management",
+    "parent_id": 2,
+    "subcategories": []
+  },
+  {
+    "id": 36,
+    "name": "Public Relations",
+    "parent_id": 2,
+    "subcategories": []
+  },
+  {
+    "id": 37,
+    "name": "Web Analytics",
+    "parent_id": 2,
+    "subcategories": []
+  },
+  {
+    "id": 38,
+    "name": "Articles & Blog Posts",
+    "parent_id": 3,
+    "subcategories": []
+  },
+  {
+    "id": 39,
+    "name": "Proofreading & Editing",
+    "parent_id": 3,
+    "subcategories": []
+  },
+  {
+    "id": 40,
+    "name": "Resume Writing",
+    "parent_id": 3,
+    "subcategories": []
+  },
+  {
+    "id": 41,
+    "name": "Product Descriptions",
+    "parent_id": 3,
+    "subcategories": []
+  },
+  {
+    "id": 42,
+    "name": "Website Content",
+    "parent_id": 3,
+    "subcategories": []
+  },
+  {
+    "id": 43,
+    "name": "Scriptwriting",
+    "parent_id": 3,
+    "subcategories": []
+  },
+  {
+    "id": 44,
+    "name": "Book & Ebook Writing",
+    "parent_id": 3,
+    "subcategories": []
+  },
+  {
+    "id": 45,
+    "name": "Book Editing",
+    "parent_id": 3,
+    "subcategories": []
+  },
+  {
+    "id": 46,
+    "name": "Creative Writing",
+    "parent_id": 3,
+    "subcategories": []
+  },
+  {
+    "id": 47,
+    "name": "UX Writing",
+    "parent_id": 3,
+    "subcategories": []
+  },
+  {
+    "id": 48,
+    "name": "Translation",
+    "parent_id": 3,
+    "subcategories": []
+  },
+  {
+    "id": 49,
+    "name": "Transcription",
+    "parent_id": 3,
+    "subcategories": []
+  },
+  {
+    "id": 50,
+    "name": "White Papers",
+    "parent_id": 3,
+    "subcategories": []
+  },
+  {
+    "id": 51,
+    "name": "Video Editing",
+    "parent_id": 4,
+    "subcategories": []
+  },
+  {
+    "id": 52,
+    "name": "Video Templates",
+    "parent_id": 4,
+    "subcategories": []
+  },
+  {
+    "id": 53,
+    "name": "Video Ads & Commercials",
+    "parent_id": 4,
+    "subcategories": []
+  },
+  {
+    "id": 54,
+    "name": "Intros & Outros",
+    "parent_id": 4,
+    "subcategories": []
+  },
+  {
+    "id": 55,
+    "name": "Social Media Videos",
+    "parent_id": 4,
+    "subcategories": []
+  },
+  {
+    "id": 56,
+    "name": "Animation for Kids",
+    "parent_id": 4,
+    "subcategories": []
+  },
+  {
+    "id": 57,
+    "name": "Animated GIFs",
+    "parent_id": 4,
+    "subcategories": []
+  },
+  {
+    "id": 58,
+    "name": "Character Animation",
+    "parent_id": 4,
+    "subcategories": []
+  },
+  {
+    "id": 59,
+    "name": "Logo Animation",
+    "parent_id": 4,
+    "subcategories": []
+  },
+  {
+    "id": 60,
+    "name": "App & Website Previews",
+    "parent_id": 4,
+    "subcategories": []
+  },
+  {
+    "id": 61,
+    "name": "E-commerce Product Videos",
+    "parent_id": 4,
+    "subcategories": []
+  },
+  {
+    "id": 62,
+    "name": "Unboxing Videos",
+    "parent_id": 4,
+    "subcategories": []
+  },
+  {
+    "id": 63,
+    "name": "Visual Effects",
+    "parent_id": 4,
+    "subcategories": []
+  },
+  {
+    "id": 64,
+    "name": "Subtitles & Captions",
+    "parent_id": 4,
+    "subcategories": []
+  },
+  {
+    "id": 65,
+    "name": "Spokesperson Videos",
+    "parent_id": 4,
+    "subcategories": []
+  },
+  {
+    "id": 66,
+    "name": "Music Production",
+    "parent_id": 5,
+    "subcategories": []
+  },
+  {
+    "id": 67,
+    "name": "Producers & Composers",
+    "parent_id": 5,
+    "subcategories": []
+  },
+  {
+    "id": 68,
+    "name": "Singers & Vocalists",
+    "parent_id": 5,
+    "subcategories": []
+  },
+  {
+    "id": 69,
+    "name": "Mixing & Mastering",
+    "parent_id": 5,
+    "subcategories": []
+  },
+  {
+    "id": 70,
+    "name": "Voice Over",
+    "parent_id": 5,
+    "subcategories": []
+  },
+  {
+    "id": 71,
+    "name": "Podcast Production",
+    "parent_id": 5,
+    "subcategories": []
+  },
+  {
+    "id": 72,
+    "name": "Audiobook Production",
+    "parent_id": 5,
+    "subcategories": []
+  },
+  {
+    "id": 73,
+    "name": "Sound Design",
+    "parent_id": 5,
+    "subcategories": []
+  },
+  {
+    "id": 74,
+    "name": "Dialogue Editing",
+    "parent_id": 5,
+    "subcategories": []
+  },
+  {
+    "id": 75,
+    "name": "Audio Ads Production",
+    "parent_id": 5,
+    "subcategories": []
+  },
+  {
+    "id": 76,
+    "name": "Jingles & Intros",
+    "parent_id": 5,
+    "subcategories": []
+  },
+  {
+    "id": 77,
+    "name": "Website Builders & CMS",
+    "parent_id": 6,
+    "subcategories": []
+  },
+  {
+    "id": 78,
+    "name": "Game Development",
+    "parent_id": 6,
+    "subcategories": []
+  },
+  {
+    "id": 79,
+    "name": "Development for Streamers",
+    "parent_id": 6,
+    "subcategories": []
+  },
+  {
+    "id": 80,
+    "name": "Web Programming",
+    "parent_id": 6,
+    "subcategories": []
+  },
+  {
+    "id": 81,
+    "name": "Mobile Apps",
+    "parent_id": 6,
+    "subcategories": []
+  },
+  {
+    "id": 82,
+    "name": "Desktop Applications",
+    "parent_id": 6,
+    "subcategories": []
+  },
+  {
+    "id": 83,
+    "name": "Support & IT",
+    "parent_id": 6,
+    "subcategories": []
+  },
+  {
+    "id": 84,
+    "name": "Chatbots",
+    "parent_id": 6,
+    "subcategories": []
+  },
+  {
+    "id": 85,
+    "name": "Data Processing",
+    "parent_id": 6,
+    "subcategories": []
+  },
+  {
+    "id": 86,
+    "name": "E-commerce Development",
+    "parent_id": 6,
+    "subcategories": []
+  },
+  {
+    "id": 87,
+    "name": "Blockchain & Cryptocurrency",
+    "parent_id": 6,
+    "subcategories": []
+  },
+  {
+    "id": 88,
+    "name": "Virtual & Augmented Reality",
+    "parent_id": 6,
+    "subcategories": []
+  },
+  {
+    "id": 89,
+    "name": "QA & Testing",
+    "parent_id": 6,
+    "subcategories": []
+  },
+  {
+    "id": 90,
+    "name": "Cybersecurity & Data Protection",
+    "parent_id": 6,
+    "subcategories": []
+  },
+  {
+    "id": 91,
+    "name": "Virtual Assistant",
+    "parent_id": 7,
+    "subcategories": []
+  },
+  {
+    "id": 92,
+    "name": "E-Commerce Management",
+    "parent_id": 7,
+    "subcategories": []
+  },
+  {
+    "id": 93,
+    "name": "Market Research",
+    "parent_id": 7,
+    "subcategories": []
+  },
+  {
+    "id": 94,
+    "name": "Business Plans",
+    "parent_id": 7,
+    "subcategories": []
+  },
+  {
+    "id": 95,
+    "name": "Business Consulting",
+    "parent_id": 7,
+    "subcategories": []
+  },
+  {
+    "id": 96,
+    "name": "HR Consulting",
+    "parent_id": 7,
+    "subcategories": []
+  },
+  {
+    "id": 97,
+    "name": "Legal Consulting",
+    "parent_id": 7,
+    "subcategories": []
+  },
+  {
+    "id": 98,
+    "name": "Financial Consulting",
+    "parent_id": 7,
+    "subcategories": []
+  },
+  {
+    "id": 99,
+    "name": "Career Counseling",
+    "parent_id": 7,
+    "subcategories": []
+  },
+  {
+    "id": 100,
+    "name": "Presentations",
+    "parent_id": 7,
+    "subcategories": []
+  },
+  {
+    "id": 101,
+    "name": "Online Lessons",
+    "parent_id": 8,
+    "subcategories": []
+  },
+  {
+    "id": 102,
+    "name": "Astrology & Psychics",
+    "parent_id": 8,
+    "subcategories": []
+  },
+  {
+    "id": 103,
+    "name": "Wellness",
+    "parent_id": 8,
+    "subcategories": []
+  },
+  {
+    "id": 104,
+    "name": "Gaming",
+    "parent_id": 8,
+    "subcategories": []
+  },
+  {
+    "id": 105,
+    "name": "Fitness Lessons",
+    "parent_id": 8,
+    "subcategories": []
+  },
+  {
+    "id": 106,
+    "name": "Life Coaching",
+    "parent_id": 8,
+    "subcategories": []
+  },
+  {
+    "id": 107,
+    "name": "Greeting Cards & Videos",
+    "parent_id": 8,
+    "subcategories": []
+  },
+  {
+    "id": 108,
+    "name": "Personal Stylists",
+    "parent_id": 8,
+    "subcategories": []
+  },
+  {
+    "id": 109,
+    "name": "Cooking Lessons",
+    "parent_id": 8,
+    "subcategories": []
+  },
+  {
+    "id": 110,
+    "name": "Collectibles",
+    "parent_id": 8,
+    "subcategories": []
+  },
+  {
+    "id": 111,
+    "name": "Data Analytics",
+    "parent_id": 9,
+    "subcategories": []
+  },
+  {
+    "id": 112,
+    "name": "Data Entry",
+    "parent_id": 9,
+    "subcategories": []
+  },
+  {
+    "id": 113,
+    "name": "Data Visualization",
+    "parent_id": 9,
+    "subcategories": []
+  },
+  {
+    "id": 114,
+    "name": "Data Processing",
+    "parent_id": 9,
+    "subcategories": []
+  },
+  {
+    "id": 115,
+    "name": "Product Photography",
+    "parent_id": 10,
+    "subcategories": []
+  },
+  {
+    "id": 116,
+    "name": "Model Photography",
+    "parent_id": 10,
+    "subcategories": []
+  },
+  {
+    "id": 117,
+    "name": "Real Estate & Architecture Photography",
+    "parent_id": 10,
+    "subcategories": []
+  },
+  {
+    "id": 118,
+    "name": "Event Photography",
+    "parent_id": 10,
+    "subcategories": []
+  },
+  {
+    "id": 119,
+    "name": "Photo Editing",
+    "parent_id": 10,
+    "subcategories": []
+  },
+  {
+    "id": 120,
+    "name": "AI Art Generation",
+    "parent_id": 11,
+    "subcategories": []
+  },
+  {
+    "id": 121,
+    "name": "AI Image Editing",
+    "parent_id": 11,
+    "subcategories": []
+  },
+  {
+    "id": 122,
+    "name": "AI Content Creation",
+    "parent_id": 11,
+    "subcategories": []
+  },
+  {
+    "id": 123,
+    "name": "AI Consulting",
+    "parent_id": 11,
+    "subcategories": []
+  },
+  {
+    "id": 124,
+    "name": "AI Model Training",
+    "parent_id": 11,
+    "subcategories": []
+  }
+]
