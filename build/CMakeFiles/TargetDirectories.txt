@@ -1,0 +1,3 @@
+C:/Projects/devsy_web_server/build/CMakeFiles/kernel_main.dir
+C:/Projects/devsy_web_server/build/CMakeFiles/ALL_BUILD.dir
+C:/Projects/devsy_web_server/build/CMakeFiles/ZERO_CHECK.dir

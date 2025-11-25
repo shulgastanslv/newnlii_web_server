@@ -32,4 +32,6 @@ def get_all_reviews(project_id: int, db: Session = Depends(get_db)):
 
 @router.get("/has_review/{project_id}/{user_id}", response_model=bool)
 def has_review(project_id: int, user_id: int, db: Session = Depends(get_db)):
+    print(f"project_id: {project_id}, user_id: {user_id}")
+    print(f"project_review.has_review(db, project_id, user_id): {project_review.has_review(db, project_id, user_id)}")
     return project_review.has_review(db, project_id, user_id)

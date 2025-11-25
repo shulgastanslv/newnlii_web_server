@@ -1,6 +1,7 @@
 from fastapi import APIRouter
-from app.api.v1 import project, skill, user, category, specialization, user_skills, user_specializations, order, project_review, user_review, favorite, project_image, redis_cache, transaction
+from app.api.v1 import project, skill, user, category, specialization, user_skills, user_specializations, order, project_review, user_review, favorite, project_image, redis_cache, transaction, faq
 from app.api.mistral_AI import router as mistral
+from app.api.v1 import tags
 
 api_router = APIRouter()
 api_router.include_router(user_skills.router, prefix="/user_skills", tags=["User-Skills"])
@@ -13,11 +14,11 @@ api_router.include_router(specialization.router, prefix="/specializations", tags
 api_router.include_router(order.router, prefix="/orders", tags=["Orders"])
 api_router.include_router(transaction.router, prefix="/transactions", tags=["Transactions"])
 api_router.include_router(mistral.router, prefix="/mistral", tags=["Mistral"])
-# Mount ask_ai endpoint at root level
 api_router.include_router(project_review.router, prefix="/project-reviews", tags=["Project Reviews"])
 api_router.include_router(user_review.router, prefix="/user-reviews", tags=["User Reviews"])
 api_router.include_router(favorite.router, prefix="/favorites", tags=["Favorites"])
 api_router.include_router(project_image.router, prefix="/project-images", tags=["Project Images"])
 api_router.include_router(redis_cache.router, prefix="/cache", tags=["Redis Cache"])
-
+api_router.include_router(faq.router, prefix="/faq", tags=["FAQ"])
+api_router.include_router(tags.router, prefix="/tags", tags=["Tags"])
 

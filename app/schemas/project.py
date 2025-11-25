@@ -53,6 +53,7 @@ class ProjectOut(ProjectBase):
     owner: Optional[UserOut]
     category: Optional[CategoryOut] 
     reviews_count: Optional[int] = None
+    rating: Optional[float] = None
     images: Optional[List[ProjectImageOut]] = None
     model_config = {
          "use_enum_values": True,
