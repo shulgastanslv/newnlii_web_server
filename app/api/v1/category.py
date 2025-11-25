@@ -13,4 +13,8 @@ def create_category(value: CategoryCreate, db: Session = Depends(get_db)):
 
 @router.get("/", response_model=List[CategoryOut])
 def get_all_project(db: Session = Depends(get_db)):
-    return crud_category.get_all_categories_cached(db)
+    return crud_category.get_all_categories(db)
+
+@router.get("/{category_id}", response_model=CategoryOut)
+def get_category(category_id: int, db: Session = Depends(get_db)):
+    return crud_category.get_category(db, category_id)
