@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel
 from app.models.user import UserRole, UserStatus
 from app.schemas.skill import SkillOut
+from app.schemas.project_image import ProjectImageOut
 
 class ProjectShort(BaseModel):
     id: int
@@ -11,6 +12,7 @@ class ProjectShort(BaseModel):
     description: str
     budget: float
     crypto_type: int
+    images: Optional[List[ProjectImageOut]] = None
     visible : bool
     model_config = {"from_attributes": True}
 
@@ -26,7 +28,7 @@ class UserBase(BaseModel):
     timezone: Optional[str] = None
     region: Optional[str] = None
     status: UserStatus = UserStatus.offline
-    completed_orders: int = 0
+    completed_orders_count: int = 0
     repeat_orders: int = 0
     rating: float = 0.0
     verified: bool = False

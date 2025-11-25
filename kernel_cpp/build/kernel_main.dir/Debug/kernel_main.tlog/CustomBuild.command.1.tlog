@@ -1,0 +1,10 @@
+^C:\PROJECTS\DEVSY_WEB_SERVER\KERNEL_CPP\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Projects/devsy_web_server/kernel_cpp -BC:/Projects/devsy_web_server/kernel_cpp/build --check-stamp-file C:/Projects/devsy_web_server/kernel_cpp/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

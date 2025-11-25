@@ -3,6 +3,18 @@ echo ========================================
 echo Starting Devsy Web Server...
 echo ========================================
 
+
+@echo check_venv_status
+if not exist .venv (
+    echo Creating virtual environment...
+    python -m venv .venv
+)
+@echo venv_created
+
+@echo activate_venv
+.\venv\Scripts\activate
+@echo venv_activated
+
 REM
 
 REM Запуск основного сервера в новом окне
