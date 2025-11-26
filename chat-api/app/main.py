@@ -30,15 +30,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(chat.router, prefix="/chat", tags=["Chat"])
-app.include_router(users.router, prefix="/chat/users", tags=["Users"])
+app.include_router(chat.router, tags=["Chat"])
+app.include_router(users.router, tags=["Users"])
 
-@app.get("/chat/")
+@app.get("/")
 def root():
     return {
-        "message": "Chat API",
-        "docs": "/chat/docs",
-        "websocket": "/chat/ws/{chat_id}/{user_id}"
+        "message": "Chat API with WebSocket",
+        "docs": "/docs",
+        "websocket": "/ws/{chat_id}/{user_id}"
     }
-
 
