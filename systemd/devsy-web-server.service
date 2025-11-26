@@ -5,8 +5,6 @@ Wants=network.target
 
 [Service]
 Type=simple
-User=www-data
-Group=www-data
 WorkingDirectory=/root/Projects/devsy_web_server
 Environment="PATH=/root/Projects/devsy_web_server/.venv/bin:/usr/local/bin:/usr/bin:/bin"
 Environment="PYTHONPATH=/root/Projects/devsy_web_server"
@@ -25,7 +23,6 @@ SyslogIdentifier=devsy-web-server
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
-ProtectHome=read-only
 ReadWritePaths=/root/Projects/devsy_web_server
 
 [Install]
