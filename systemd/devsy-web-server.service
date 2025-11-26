@@ -19,11 +19,9 @@ StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=devsy-web-server
 
-# Security settings
-NoNewPrivileges=true
-PrivateTmp=true
-ProtectSystem=strict
-ReadWritePaths=/root/Projects/devsy_web_server
+# Run as root with full privileges
+User=root
+Group=root
 
 [Install]
 WantedBy=multi-user.target
