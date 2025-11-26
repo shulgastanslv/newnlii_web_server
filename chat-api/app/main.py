@@ -20,8 +20,6 @@ origins = [
     "http://127.0.0.1:8000",
     "https://devsy-five.vercel.app",
     "https://*.vercel.app",
-    # Добавьте ваш домен для chat-api здесь, например:
-    # "https://chat-api.yourdomain.com",
 ]
 
 app.add_middleware(

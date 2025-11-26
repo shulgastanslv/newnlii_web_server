@@ -22,6 +22,5 @@ SyslogIdentifier=devsy-chat-server
 # Run as root with full privileges
 User=root
 Group=root
-
 [Install]
 WantedBy=multi-user.target
