@@ -8,14 +8,14 @@ if [ ! -d ".venv" ]; then
     echo "Creating virtual environment..."
     python3 -m venv .venv
     echo "Installing dependencies..."
-    source .venv/bin/activate
-    pip install -r requirements.txt
+    .venv/bin/pip install -r requirements.txt
 else
-    source .venv/bin/activate
+    # Убедимся, что зависимости установлены
+    .venv/bin/pip install -r requirements.txt --quiet
 fi
 
 echo "Starting Main API Server on 0.0.0.0:8000..."
 echo "Server will be accessible from external networks"
 echo ""
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+.venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
 
