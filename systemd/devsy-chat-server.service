@@ -1,0 +1,32 @@
+[Unit]
+Description=Devsy Chat Server - Chat API Server
+After=network.target postgresql.service
+Wants=network.target
+
+[Service]
+Type=notify
+User=www-data
+Group=www-data
+WorkingDirectory=/root/Projects/devsy_web_server/chat-api
+Environment="PATH=//root/Projects/devsy_web_server/.venv/bin"
+ExecStart=/root/Projects/devsy_web_server/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8010
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+KillSignal=SIGINT
+TimeoutStopSec=5
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=devsy-chat-server
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/path/to/devsy_web_server/chat-api
+
+[Install]
+WantedBy=multi-user.target
+

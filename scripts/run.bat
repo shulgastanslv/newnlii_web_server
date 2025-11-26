@@ -17,14 +17,14 @@ if not exist .venv (
 
 REM
 
-REM Запуск основного сервера в новом окне
+REM
 echo Starting Main API Server...
 start "Devsy Main API" cmd /k "fastapi dev .\app\main.py"
 
-REM Небольшая задержка перед запуском второго сервера
+REM
 timeout /t 2 /nobreak >nul
 
-REM Переход в директорию chat-api и запуск Chat API
+REM
 echo Starting Chat API Server...
 cd chat-api
 start "Devsy Chat API" cmd /k "uvicorn app.main:app --reload --host 0.0.0.0 --port 8010"
