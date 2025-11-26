@@ -48,20 +48,36 @@ echo "4. Checking permissions..."
 ls -la /root/Projects/devsy_web_server/.venv/bin/uvicorn 2>/dev/null || echo "Cannot check uvicorn permissions"
 echo ""
 
+# Check Python interpreter and uvicorn module
+echo "5. Checking Python interpreter and uvicorn module..."
+if [ -f "/root/Projects/devsy_web_server/.venv/bin/python" ]; then
+    echo "✓ Python interpreter exists"
+    if /root/Projects/devsy_web_server/.venv/bin/python -c "import uvicorn" 2>/dev/null; then
+        echo "✓ uvicorn module can be imported"
+    else
+        echo "✗ Cannot import uvicorn module"
+        echo "  Attempting to import uvicorn..."
+        /root/Projects/devsy_web_server/.venv/bin/python -c "import uvicorn" 2>&1 | head -5
+    fi
+else
+    echo "✗ Python interpreter missing: /root/Projects/devsy_web_server/.venv/bin/python"
+fi
+echo ""
+
 # Try to start the service
-echo "5. Attempting to start the service..."
+echo "6. Attempting to start the service..."
 sudo systemctl start devsy-web-server.service
 sleep 2
 echo ""
 
 # Check status again
-echo "6. Service status after start attempt..."
+echo "7. Service status after start attempt..."
 sudo systemctl status devsy-web-server.service --no-pager -l
 echo ""
 
 # Check logs again if failed
 if ! sudo systemctl is-active --quiet devsy-web-server.service; then
-    echo "7. Latest error logs..."
+    echo "8. Latest error logs..."
     sudo journalctl -u devsy-web-server.service -n 20 --no-pager
 fi
 
