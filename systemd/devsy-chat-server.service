@@ -4,12 +4,11 @@ After=network.target postgresql.service
 Wants=network.target
 
 [Service]
-Type=notify
-User=www-data
-Group=www-data
+Type=simple
 WorkingDirectory=/root/Projects/devsy_web_server/chat-api
 Environment="PATH=/root/Projects/devsy_web_server/.venv/bin:/usr/local/bin:/usr/bin:/bin"
-ExecStart=/root/Projects/devsy_web_server/.venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8010
+Environment="PYTHONPATH=/root/Projects/devsy_web_server/chat-api"
+ExecStart=/root/Projects/devsy_web_server/chat-api/.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8010 --workers 4
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=mixed
 KillSignal=SIGINT
@@ -20,13 +19,9 @@ StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=devsy-chat-server
 
-# Security settings
-NoNewPrivileges=true
-PrivateTmp=true
-ProtectSystem=strict
-ProtectHome=true
-ReadWritePaths=/root/Projects/devsy_web_server/chat-api
+# Run as root with full privileges
+User=root
+Group=root
 
 [Install]
 WantedBy=multi-user.target
-
