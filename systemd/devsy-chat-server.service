@@ -6,7 +6,7 @@ Wants=network.target
 [Service]
 Type=simple
 WorkingDirectory=/root/Projects/devsy_web_server/chat-api
-Environment="PATH=/root/Projects/devsy_web_server/.venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PATH=/root/Projects/devsy_web_server/chat-api/.venv/bin:/usr/local/bin:/usr/bin:/bin"
 Environment="PYTHONPATH=/root/Projects/devsy_web_server/chat-api"
 ExecStart=/root/Projects/devsy_web_server/chat-api/.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8010 --workers 4
 ExecReload=/bin/kill -s HUP $MAINPID
