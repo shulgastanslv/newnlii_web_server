@@ -79,8 +79,6 @@ def delete_project(project_id: int, db: Session = Depends(get_db)):
     crud_project.delete_project(db, project_id)
     return {"detail": "Project deleted successfully"}
 
-
-
 @router.post("/views/{project_id}", response_model=bool)
 def add_view(project_id: int, db: Session = Depends(get_db)):
     return crud_project.add_view(db, project_id)

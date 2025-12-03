@@ -1,7 +1,6 @@
 #include "kernel/kernel.h"
 #include <iostream>
 
-
 int main() {
     std::cout << "Hello, World!" << std::endl;
 
@@ -10,7 +9,6 @@ int main() {
     kernel.run();
     kernel.shutdown();
     
-
     return 0;
 }
 

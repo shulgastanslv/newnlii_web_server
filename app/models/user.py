@@ -43,3 +43,8 @@ class User(Base):
     specializations = relationship("Specialization", secondary="user_specializations", back_populates="users")
     projects = relationship("Project", back_populates="owner")
     favorites = relationship("Favorite", backref="user", cascade="all, delete-orphan")
+    portfolio_items = relationship(
+    "PortfolioItem",
+    back_populates="user",
+    cascade="all, delete-orphan",
+    )
