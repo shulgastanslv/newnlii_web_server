@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, HttpUrl
+from typing import Optional, List
 from datetime import datetime
 
 class PortfolioBase(BaseModel):
@@ -9,12 +9,12 @@ class PortfolioBase(BaseModel):
     repo_url: Optional[str] = None
     tech_stack: Optional[str] = None
     role: Optional[str] = None
+    thumbnail_url : str
     duration: Optional[str] = None
-    is_public: int = True
+    is_public: bool = True 
 
 class PortfolioCreate(PortfolioBase):
     pass
-
 class PortfolioUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
