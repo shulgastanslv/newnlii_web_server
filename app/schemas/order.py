@@ -9,7 +9,7 @@ from app.schemas.project_image import ProjectImageOut
 class OrderBase(BaseModel):
     project_id: int
     client_id: int
-    developer_id: Optional[int] = None
+    developer_id: int
     deadline : Optional[datetime] = None
     budget : float
     status: Optional[Status] = Status.open

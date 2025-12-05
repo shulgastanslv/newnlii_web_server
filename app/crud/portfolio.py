@@ -17,7 +17,7 @@ def get_user_portfolio(
 ) -> List[models.PortfolioItem]:
     q = db.query(models.PortfolioItem).filter(models.PortfolioItem.user_id == user_id)
     if not include_private:
-        q = q.filter(models.PortfolioItem.is_public == 1)
+        q = q.filter(models.PortfolioItem.is_public)
     return q.order_by(models.PortfolioItem.created_at.desc()).all()
 
 def get_portfolio_item(
