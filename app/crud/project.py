@@ -1,6 +1,6 @@
 import json
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 from app.crud.user import get_user_by_wallet
 from app.models.project import Project
 from app.models.skill import Skill
@@ -30,7 +30,6 @@ def create_project(wallet_address: str, db: Session, project: ProjectCreate):
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    # Validate required fields
     if not project.name.strip():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Project name cannot be empty")
     if not project.description.strip():
@@ -42,7 +41,6 @@ def create_project(wallet_address: str, db: Session, project: ProjectCreate):
     if project.crypto_type < 0 or project.crypto_type == None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Crypto type cannot be empty")
 
-    # Fetch skills and tags from database if provided
     skills = []
     if project.skills:
         skills = db.query(Skill).filter(Skill.id.in_(project.skills)).all()
@@ -82,27 +80,16 @@ def create_project(wallet_address: str, db: Session, project: ProjectCreate):
 
 
 def get_all_projects(db: Session):
-    return db.query(Project).all()
-
-def get_all_projects_cached(db: Session):
-    cached_projects = redis_client.get("all_projects")
-    if cached_projects:
-        try:
-            projects_data = json.loads(cached_projects)
-            return [ProjectOut(**pd) for pd in projects_data]
-        except (json.JSONDecodeError, ValueError, TypeError) as e:
-            # If cached data is corrupted or incomplete, invalidate cache and query from DB
-            redis_client.delete("all_projects")
-    
-    # Eagerly load owner and category relationships to ensure all required fields are available
-    projects = db.query(Project).options(
-        joinedload(Project.owner),
-        joinedload(Project.category)
-    ).all()
-    response = [ProjectOut.from_orm(project) for project in projects] 
-    json_data = json.dumps([item.dict() for item in response], default=str)
-    redis_client.set("all_projects", json_data, ex=300) 
-    return response
+    return (
+        db.query(Project)
+        .options(
+            joinedload(Project.owner),
+            selectinload(Project.skills),
+            selectinload(Project.tags),
+            selectinload(Project.images),
+        )
+        .all()
+    )
 
 
 def get_project_by_id(db: Session, project_id: int):

@@ -1,49 +1,48 @@
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
+from typing import Dict, List
 import json
+
 from app.api.deps import get_db
-from app.schemas.chat import ChatCreate, ChatOut, MessageCreate, MessageOut, ChatListOut, WebSocketMessage
+from app.db.session import SessionLocal
+from app.schemas.chat import (
+    ChatCreate,
+    ChatOut,
+    MessageCreate,
+    MessageOut,
+    ChatListOut,
+)
 from app.crud import chat as crud_chat
-from app.crud import user as crud_user
 
 router = APIRouter()
-
-active_connections: dict[int, dict[int, WebSocket]] = {}
 
 
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: dict[int, dict[int, WebSocket]] = {}
+        self.connections: Dict[int, Dict[int, WebSocket]] = {}
 
-    async def connect(self, websocket: WebSocket, chat_id: int, user_id: int):
-        await websocket.accept()
-        if chat_id not in self.active_connections:
-            self.active_connections[chat_id] = {}
-        self.active_connections[chat_id][user_id] = websocket
+    async def connect(self, chat_id: int, user_id: int, ws: WebSocket):
+        await ws.accept()
+        self.connections.setdefault(chat_id, {})[user_id] = ws
 
     def disconnect(self, chat_id: int, user_id: int):
-        if chat_id in self.active_connections:
-            if user_id in self.active_connections[chat_id]:
-                del self.active_connections[chat_id][user_id]
-            if not self.active_connections[chat_id]:
-                del self.active_connections[chat_id]
+        users = self.connections.get(chat_id)
+        if not users:
+            return
 
-    async def send_personal_message(self, message: dict, chat_id: int, user_id: int):
-        if chat_id in self.active_connections and user_id in self.active_connections[chat_id]:
-            websocket = self.active_connections[chat_id][user_id]
-            await websocket.send_json(message)
+        users.pop(user_id, None)
+        if not users:
+            self.connections.pop(chat_id, None)
 
-    async def broadcast_to_chat(self, message: dict, chat_id: int, exclude_user_id: int = None):
-        if chat_id in self.active_connections:
-            for user_id, websocket in self.active_connections[chat_id].items():
-                if user_id != exclude_user_id:
-                    # Проверяем, что соединение открыто
-                        try:
-                            await websocket.send_json(message)
-                        except RuntimeError:
-                            # Соединение закрыто, удаляем из активных
-                            del self.active_connections[chat_id][user_id]
+    async def broadcast(self, chat_id: int, data: dict, exclude: int | None = None):
+        for uid, ws in list(self.connections.get(chat_id, {}).items()):
+            if uid == exclude:
+                continue
+            try:
+                await ws.send_json(data)
+            except Exception:
+                self.disconnect(chat_id, uid)
+
 
 manager = ConnectionManager()
 
@@ -68,10 +67,10 @@ def get_chat_messages(
     chat_id: int,
     limit: int = 100,
     offset: int = 0,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     messages = crud_chat.get_chat_messages(db, chat_id, limit, offset)
-    return list(reversed(messages))  # Возвращаем в хронологическом порядке
+    return list(reversed(messages))
 
 
 @router.post("/chats/{chat_id}/read")
@@ -79,108 +78,83 @@ def mark_as_read(chat_id: int, user_id: int, db: Session = Depends(get_db)):
     return crud_chat.mark_messages_as_read(db, chat_id, user_id)
 
 
+
 @router.websocket("/ws/{chat_id}/{user_id}")
-async def websocket_endpoint(websocket: WebSocket, chat_id: int, user_id: int):
-    await manager.connect(websocket, chat_id, user_id)
-    
-    # Проверяем существование пользователя и чата
-    from app.db.session import SessionLocal
+async def websocket_endpoint(ws: WebSocket, chat_id: int, user_id: int):
     db = SessionLocal()
     try:
-        user = crud_user.get_user_by_id(db, user_id)
         chat = crud_chat.get_chat_by_id(db, chat_id)
-        
-        if chat.user1_id != user_id and chat.user2_id != user_id:
-            await websocket.close(code=1008, reason="User is not a participant of this chat")
-            manager.disconnect(chat_id, user_id)  # Убрать из менеджера перед закрытием
+        if user_id not in (chat.user1_id, chat.user2_id):
+            await ws.close(code=1008)
             return
-    except HTTPException:
-        await websocket.close(code=1008, reason="Chat or user not found")
-        manager.disconnect(chat_id, user_id)  # Убрать из менеджера перед закрытием
-        return
     finally:
         db.close()
-    
+
+    await manager.connect(chat_id, user_id, ws)
+
+    await manager.broadcast(
+        chat_id,
+        {"type": "user_connected", "user_id": user_id},
+        exclude=user_id,
+    )
+
     try:
-        # Отправляем уведомление о подключении другим участникам
-        await manager.broadcast_to_chat(
-            {
-                "type": "user_connected",
-                "user_id": user_id,
-                "chat_id": chat_id
-            },
-            chat_id,
-            exclude_user_id=user_id
-        )
-        
         while True:
-            # Получаем сообщение от клиента
-            data = await websocket.receive_text()
-            message_data = json.loads(data)
-            
-            # Обрабатываем разные типы сообщений
-            if message_data.get("type") == "message":
-                # Создаем сообщение в БД
+            data = json.loads(await ws.receive_text())
+            msg_type = data.get("type")
+
+            if msg_type == "message":
                 db = SessionLocal()
                 try:
-                    message_create = MessageCreate(
-                        chat_id=chat_id,
-                        content=message_data.get("content", "")
+                    message = crud_chat.create_message(
+                        db,
+                        MessageCreate(
+                            chat_id=chat_id,
+                            content=data.get("content", ""),
+                        ),
+                        user_id,
                     )
-                    message = crud_chat.create_message(db, message_create, user_id)
-                    
-                    # Отправляем сообщение всем участникам чата
-                    message_dict = {
+                finally:
+                    db.close()
+
+                await manager.broadcast(
+                    chat_id,
+                    {
                         "type": "message",
                         "id": message.id,
                         "chat_id": chat_id,
                         "sender_id": user_id,
                         "content": message.content,
                         "created_at": message.created_at.isoformat(),
-                        "is_read": message.is_read
-                    }
-                    await manager.broadcast_to_chat(message_dict, chat_id)
-                finally:
-                    db.close()
-                    
-            elif message_data.get("type") == "typing":
-                # Отправляем уведомление о наборе текста
-                await manager.broadcast_to_chat(
-                    {
-                        "type": "typing",
-                        "user_id": user_id,
-                        "chat_id": chat_id
+                        "is_read": message.is_read,
                     },
-                    chat_id,
-                    exclude_user_id=user_id
                 )
-                
-            elif message_data.get("type") == "read":
-                # Отмечаем сообщения как прочитанные
+
+            elif msg_type == "typing":
+                await manager.broadcast(
+                    chat_id,
+                    {"type": "typing", "user_id": user_id},
+                    exclude=user_id,
+                )
+
+            elif msg_type == "read":
                 db = SessionLocal()
                 try:
                     crud_chat.mark_messages_as_read(db, chat_id, user_id)
-                    await manager.broadcast_to_chat(
-                        {
-                            "type": "read",
-                            "user_id": user_id,
-                            "chat_id": chat_id
-                        },
-                        chat_id,
-                        exclude_user_id=user_id
-                    )
                 finally:
                     db.close()
-                    
-    except WebSocketDisconnect:
-        manager.disconnect(chat_id, user_id)
-        # Уведомляем других участников об отключении
-        await manager.broadcast_to_chat(
-            {
-                "type": "user_disconnected",
-                "user_id": user_id,
-                "chat_id": chat_id
-            },
-            chat_id
-        )
 
+                await manager.broadcast(
+                    chat_id,
+                    {"type": "read", "user_id": user_id},
+                    exclude=user_id,
+                )
+
+    except WebSocketDisconnect:
+        pass
+    finally:
+        manager.disconnect(chat_id, user_id)
+        await manager.broadcast(
+            chat_id,
+            {"type": "user_disconnected", "user_id": user_id},
+        )

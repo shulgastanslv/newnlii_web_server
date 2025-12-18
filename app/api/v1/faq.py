@@ -5,7 +5,6 @@ from app.schemas.faq import FAQItem
 
 router = APIRouter()
 
-# Всего 25 FAQ вопросов
 FAQ_ITEMS = [
     {
         "question": "How long does this project typically take?",
@@ -111,30 +110,11 @@ FAQ_ITEMS = [
 
 @router.get("/random", response_model=List[FAQItem])
 def get_random_faqs(count: int = 5):
-    """
-    Получить случайные FAQ вопросы.
-    
-    Args:
-        count: Количество вопросов для возврата (по умолчанию 5, максимум 25)
-    
-    Returns:
-        Список случайных FAQ вопросов без повторений
-    """
-    # Ограничиваем количество максимумом доступных вопросов
     count = min(count, len(FAQ_ITEMS))
-    
-    # Выбираем случайные вопросы без повторений
     selected_items = random.sample(FAQ_ITEMS, count)
-    
     return [FAQItem(**item) for item in selected_items]
 
 @router.get("/all", response_model=List[FAQItem])
 def get_all_faqs():
-    """
-    Получить все FAQ вопросы.
-    
-    Returns:
-        Список всех FAQ вопросов
-    """
     return [FAQItem(**item) for item in FAQ_ITEMS]
 

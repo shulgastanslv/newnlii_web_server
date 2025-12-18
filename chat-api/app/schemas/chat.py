@@ -63,7 +63,7 @@ class ChatListOut(BaseModel):
 
 
 class WebSocketMessage(BaseModel):
-    type: str  # "message", "typing", "read"
+    type: str
     chat_id: int
     sender_id: int
     content: Optional[str] = None

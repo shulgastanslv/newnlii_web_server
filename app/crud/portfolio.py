@@ -28,6 +28,12 @@ def get_portfolio_item(
         q = q.filter(models.PortfolioItem.user_id == user_id)
     return q.first()
 
+def get_all(
+    db: Session
+)  -> List[models.PortfolioItem]:
+    q = db.query(models.PortfolioItem).all()
+    return q
+
 def update_portfolio_item(
     db: Session, item: models.PortfolioItem, data: PortfolioUpdate
 ) -> models.PortfolioItem:

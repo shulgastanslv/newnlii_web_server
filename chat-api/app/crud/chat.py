@@ -10,7 +10,6 @@ from datetime import datetime
 
 
 def create_chat(db: Session, chat: ChatCreate):
-    # Проверяем, существует ли уже чат между этими пользователями
     existing_chat = get_chat_by_users(db, chat.user1_id, chat.user2_id)
     if existing_chat:
         return existing_chat
@@ -39,7 +38,6 @@ def get_chat_by_users(db: Session, user1_id: int, user2_id: int):
 
 
 def get_user_chats(db: Session, user_id: int) -> List[ChatListOut]:
-    """Получить все чаты пользователя с последним сообщением"""
     chats = db.query(Chat).filter(
         or_(Chat.user1_id == user_id, Chat.user2_id == user_id)
     ).all()
@@ -59,7 +57,6 @@ def get_user_chats(db: Session, user_id: int) -> List[ChatListOut]:
         other_user_id = chat.user2_id if chat.user1_id == user_id else chat.user1_id
         other_user = db.query(User).filter(User.id == other_user_id).first()
         
-        # Convert SQLAlchemy models to Pydantic schemas
         last_message_out = MessageOut.model_validate(last_message) if last_message else None
         other_user_out = UserOut.model_validate(other_user) if other_user else None
         
@@ -78,10 +75,7 @@ def get_user_chats(db: Session, user_id: int) -> List[ChatListOut]:
 
 
 def create_message(db: Session, message: MessageCreate, sender_id: int):
-    # Проверяем существование чата
     chat = get_chat_by_id(db, message.chat_id)
-    
-    # Обновляем время последнего обновления чата
     chat.updated_at = datetime.now()
     
     db_message = Message(
@@ -97,14 +91,12 @@ def create_message(db: Session, message: MessageCreate, sender_id: int):
 
 
 def get_chat_messages(db: Session, chat_id: int, limit: int = 100, offset: int = 0):
-    """Получить сообщения чата с пагинацией"""
     return db.query(Message).filter(
         Message.chat_id == chat_id
     ).order_by(Message.created_at.desc()).offset(offset).limit(limit).all()
 
 
 def mark_messages_as_read(db: Session, chat_id: int, user_id: int):
-    """Отметить сообщения как прочитанные"""
     db.query(Message).filter(
         Message.chat_id == chat_id,
         Message.sender_id != user_id,

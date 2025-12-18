@@ -51,6 +51,29 @@ def list_user_portfolio_public(
     )
 
 
+@router.get(
+    "/{item_id}", response_model=PortfolioPublic
+)
+def get_item_by_id(
+    item_id: int,
+    db: Session = Depends(get_db),
+):
+    return crud.get_portfolio_item(
+        db=db, item_id=item_id
+    )
+
+@router.get(
+    "/", response_model=List[PortfolioPublic]
+)
+def get_all(
+    db: Session = Depends(get_db),
+):
+    return crud.get_all(
+        db=db
+    )
+
+
+
 @router.put(
     "/{item_id}", response_model=PortfolioInDB
 )
@@ -71,6 +94,7 @@ def update_my_portfolio_item(
 @router.delete(
     "/{item_id}", status_code=status.HTTP_204_NO_CONTENT
 )
+
 def delete_my_portfolio_item(
     item_id: int,
     user_id: int = Query(..., ge=1),

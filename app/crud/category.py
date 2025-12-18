@@ -1,3 +1,4 @@
+from collections import Counter
 import json
 from pathlib import Path
 from sqlalchemy.orm import Session
@@ -22,3 +23,8 @@ def get_all_categories(db : Session):
 
 def get_category(db: Session, category_id: int):
     return db.query(Category).filter(Category.id == category_id).first()
+
+def get_popular_categories(db: Session):
+    projects = db.query(Project).all()
+    categories = []
+    return categories
