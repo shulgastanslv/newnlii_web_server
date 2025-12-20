@@ -25,8 +25,7 @@ class Message(Base):
     sender_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     content = Column(Text, nullable=False)
     created_at = Column(DateTime, server_default=func.now(), index=True)
-    is_read = Column(Integer, default=0, nullable=False)  # 0 - не прочитано, 1 - прочитано
+    is_read = Column(Integer, default=0, nullable=False)
     
     chat = relationship("Chat", back_populates="messages")
     sender = relationship("User", backref="sent_messages")
-

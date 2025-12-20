@@ -14,4 +14,5 @@ from app.models.project_image import *
 from app.models.transaction import *
 from app.models.keys import *
 from app.models.portfolio import *
+from app.models.chat.chat import *
 Base.metadata.create_all(bind=engine)

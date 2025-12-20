@@ -5,14 +5,14 @@ import json
 
 from app.api.deps import get_db
 from app.db.session import SessionLocal
-from app.schemas.chat import (
+from app.schemas.chat.chat import (
     ChatCreate,
     ChatOut,
     MessageCreate,
     MessageOut,
     ChatListOut,
 )
-from app.crud import chat as crud_chat
+from app.crud.chat import chat as crud_chat
 
 router = APIRouter()
 
@@ -76,7 +76,6 @@ def get_chat_messages(
 @router.post("/chats/{chat_id}/read")
 def mark_as_read(chat_id: int, user_id: int, db: Session = Depends(get_db)):
     return crud_chat.mark_messages_as_read(db, chat_id, user_id)
-
 
 
 @router.websocket("/ws/{chat_id}/{user_id}")

@@ -3,6 +3,7 @@ from app.api.v1 import common, project, skill, user, category, specialization, u
 from app.api.mistral_AI import router as mistral
 from app.api.v1 import tags
 from app.api.v2 import portfolio
+from app.api.chat import chat
 
 api_router = APIRouter()
 api_router.include_router(user_skills.router, prefix="/user_skills", tags=["User-Skills"])
@@ -29,3 +30,7 @@ api_router.include_router(common.router, prefix="/common", tags=["Common"])
 
 # V2 PORTFOLIO
 api_router.include_router(portfolio.router, prefix="/portfolio", tags=["Portfolio"])
+
+
+# Chat
+api_router.include_router(chat.router, tags=["Chat"])

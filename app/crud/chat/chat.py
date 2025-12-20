@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
-from app.models.chat import Chat, Message
+from app.models.chat.chat import Chat, Message
 from app.models.user import User
-from app.schemas.chat import ChatCreate, MessageCreate, MessageOut, ChatListOut
+from app.schemas.chat.chat import ChatCreate, MessageCreate, MessageOut, ChatListOut
 from app.schemas.user import UserOut
 from fastapi import HTTPException
 from typing import List, Optional
