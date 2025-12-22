@@ -1,6 +1,7 @@
 from collections import Counter
 import json
 from pathlib import Path
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.models.category import Category
 from app.models.project import Project
@@ -25,6 +26,5 @@ def get_category(db: Session, category_id: int):
     return db.query(Category).filter(Category.id == category_id).first()
 
 def get_popular_categories(db: Session):
-    projects = db.query(Project).all()
-    categories = []
-    return categories
+    result = db.query(Category).join(Project, Category.id == Project.category_id).order_by(func.count(Project.id).desc()).group_by(Category.id).limit(5).all()
+    return result

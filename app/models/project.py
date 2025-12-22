@@ -47,7 +47,11 @@ class Project(Base):
     category = relationship("Category", backref="projects")
     reviews = relationship("ProjectReview", backref="project")
     favorites = relationship("Favorite", backref="project", cascade="all, delete-orphan")
-
+    notifications = relationship(
+        "Notification",
+        back_populates="project",
+        cascade="all, delete-orphan"
+    )
     @classmethod
     def from_dict(cls, data):
         return cls(**data)
