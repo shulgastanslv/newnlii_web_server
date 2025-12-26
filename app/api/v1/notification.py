@@ -28,6 +28,18 @@ def create_notification(
     return crud_notifications.create_notification(db, payload)
 
 
+@router.post(
+    "/{notification_id}/read",
+    status_code=status.HTTP_200_OK,
+)
+def markAsRead(
+    notification_id: int,
+    db: Session = Depends(get_db),
+):
+    return crud_notifications.mark_notification_read(
+        db=db, notif_id=notification_id, is_read=True
+)
+
 @router.get(
     "/{notification_id}",
     response_model=NotificationOut,

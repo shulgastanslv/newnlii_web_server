@@ -61,6 +61,6 @@ class UserUpdate(BaseModel):
 class UserOut(UserBase):
     id: int
     created_at: datetime
-
+    request_count : int
     model_config = {"from_attributes": True}
 
