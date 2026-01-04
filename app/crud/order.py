@@ -11,10 +11,21 @@ def create_order(db: Session, order: OrderCreate):
     db.refresh(db_order)
     return db_order
 
+def get_order_index(db: Session):
+    return db.query(Order).count() + 1
+
 def get_order_by_id(db: Session, order_id: int):
     order = db.query(Order).filter(Order.id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
+    return order
+
+def order_close(order_id : int, db : Session):
+    order = db.query(Order).filter(Order.id == order_id).first()
+    order.status = "closed"
+    db.add(order)
+    db.commit()
+    db.refresh(order)
     return order
 
 def get_all_orders(db: Session):

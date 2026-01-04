@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db
 from typing import List
 from app.crud import request as crud_request
-from app.schemas.request import RequestCreate, RequestOut
+from app.schemas.request import RequestCreate, RequestDevID, RequestExisting, RequestOut
 
 router = APIRouter()
 
@@ -23,6 +23,10 @@ def get_requests_by_dev(address: str, db: Session = Depends(get_db)):
 def get_requests_by_client(user_id: int, db: Session = Depends(get_db)):
     return crud_request.get_client_requests(db, user_id)
 
+@router.post("/dev_id", response_model=int | None)
+def get_request_by_dev_id(req : RequestDevID, db: Session = Depends(get_db)):
+    print(req)
+    return crud_request.get_request_by_dev_id(db, req.dev_id, req.project_id)
 
 @router.get("/user/{address}/stats")
 def get_user_stats(address: str, db: Session = Depends(get_db)):

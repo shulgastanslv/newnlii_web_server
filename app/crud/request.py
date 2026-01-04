@@ -1,15 +1,22 @@
 from sqlalchemy.orm import Session
 from app.models.request import Request
 from app.models.user import User
-from app.schemas.request import RequestCreate
+from app.schemas.request import RequestCreate, RequestExisting
 from sqlalchemy.orm import joinedload
 
 def create_request(db: Session, request: RequestCreate):
-    res = Request(id=request.id, project_id=request.project_id, client_id=request.client_id, developer_id=request.developer_id)
+    res = Request(project_id=request.project_id, client_id=request.client_id, developer_id=request.developer_id, status=request.status)
     db.add(res)
     db.commit()
     db.refresh(res)
     return res
+
+def get_request_by_dev_id(db: Session, dev_id: int, project_id: int):
+    res = db.query(Request).filter(Request.developer_id == dev_id and Request.project_id == project_id).first()
+    print(res)
+    if res:
+        return res.id
+    return None
 
 def get_all_requests(db: Session):
     requests = db.query(Request).options(

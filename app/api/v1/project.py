@@ -24,6 +24,8 @@ def get_all_projects(
     seller: Optional[str] = None,
     budget: Optional[str] = None,
     sort: Optional[str] = None,
+    page: int = 1,            
+    limit: int = 5,           
 ):
     
     q = db.query(Project)
@@ -63,6 +65,9 @@ def get_all_projects(
             q = q.order_by(Project.budget.desc())
         elif sort == "newest":
             q = q.order_by(Project.created_at.desc())
+
+    offset = (page - 1) * limit
+    q = q.offset(offset).limit(limit)
 
     return q.all()
 

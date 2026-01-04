@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel
 
 from app.models.request import RequestStatus
@@ -7,12 +8,11 @@ from app.schemas.user import UserOut
 
 
 class RequestBase(BaseModel):
-    id: int
     status : RequestStatus
     project_id : int
     client_id : int
     developer_id : int
-    created_at : datetime
+    created_at : Optional[datetime] = datetime
 
 class RequestCreate(RequestBase):
     pass
@@ -25,3 +25,10 @@ class RequestOut(RequestBase):
     model_config = {
         "from_attributes": True
     }
+
+
+class RequestDevID(BaseModel):
+    dev_id : int
+    project_id : int
+class RequestExisting(RequestBase):
+    id: int
