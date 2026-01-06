@@ -4,7 +4,6 @@ from fastapi import HTTPException
 from app.models.user import User, UserRole, UserStatus
 from app.schemas.user import UserCreate, UserUpdate
 
-
 def create_user(db: Session, user: UserCreate):
     try:
         db_user = User(
@@ -75,13 +74,11 @@ def get_user_by_name(db: Session, name: str):
 def get_users(db: Session):
     return db.query(User).all()
 
-
 def get_user_by_id(db: Session, id: str):
     user = db.query(User).filter(User.id == id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
-
 
 def update_user(db: Session, wallet_address: str, update_data: UserUpdate):
     user = db.query(User).filter(User.wallet_address == wallet_address).first()

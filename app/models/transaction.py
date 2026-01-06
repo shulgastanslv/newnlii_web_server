@@ -22,8 +22,8 @@ class Transaction(Base):
     status = Column(Enum(TransactionStatus, name="transaction_status_enum"), default=TransactionStatus.pending, nullable=False)
     created_at = Column(DateTime, server_default=func.now())
     confirmed_at = Column(DateTime, nullable=True)
-    blockchain_type = Column(Integer, nullable=True, default=0)  # 0 = ETH, 1 = BSC, etc.
-    error_message = Column(Text, nullable=True)  # Сообщение об ошибке, если транзакция failed
+    blockchain_type = Column(Integer, nullable=True, default=0)
+    error_message = Column(Text, nullable=True)
     
     order = relationship("Order", backref="transactions")
 

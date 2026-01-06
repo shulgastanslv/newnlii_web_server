@@ -1,12 +1,9 @@
-from collections import Counter
-import json
-from pathlib import Path
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.models.category import Category
 from app.models.project import Project
-from app.schemas.category import CategoryCreate, CategoryOut
-from app.schemas.project import ProjectCreate
+from app.schemas.category import CategoryCreate
+from sqlalchemy.orm import selectinload
 
 def create_category(db: Session, ctg: CategoryCreate):
     res = Category(
@@ -18,9 +15,13 @@ def create_category(db: Session, ctg: CategoryCreate):
     db.refresh(res)
     return res
 
-def get_all_categories(db : Session):
-    from sqlalchemy.orm import selectinload
-    return db.query(Category).options(selectinload(Category.subcategories)).all()
+def get_all_categories(db: Session):
+    return (
+        db.query(Category)
+        .filter(Category.parent_id == None)
+        .options(selectinload(Category.subcategories))
+        .all()
+    )
 
 def get_category(db: Session, category_id: int):
     return db.query(Category).filter(Category.id == category_id).first()

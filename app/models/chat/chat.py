@@ -24,8 +24,8 @@ class Message(Base):
     chat_id = Column(Integer, ForeignKey("chats.id"), nullable=False, index=True)
     sender_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     content = Column(Text, nullable=False)
+    type = Column(Text, nullable=False, server_default="message")
     created_at = Column(DateTime, server_default=func.now(), index=True)
     is_read = Column(Integer, default=0, nullable=False)
-    
     chat = relationship("Chat", back_populates="messages")
     sender = relationship("User", backref="sent_messages")

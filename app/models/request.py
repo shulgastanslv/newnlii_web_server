@@ -3,7 +3,6 @@ from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, String, Date
 from app.db.base import Base
 from sqlalchemy.orm import relationship, backref
 
-
 class RequestStatus(enum.Enum):
     pending = "pending"
     accepted = "accepted"

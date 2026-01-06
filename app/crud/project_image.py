@@ -6,7 +6,6 @@ from app.models.project import Project
 from app.schemas.project_image import ProjectImageCreate, ProjectImageUpdate
 
 def get_project_images(db: Session, project_id: int) -> List[ProjectImage]:
-    """Получить все картинки проекта"""
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
         raise HTTPException(
@@ -16,7 +15,6 @@ def get_project_images(db: Session, project_id: int) -> List[ProjectImage]:
     return db.query(ProjectImage).filter(ProjectImage.project_id == project_id).order_by(ProjectImage.order, ProjectImage.created_at).all()
 
 def get_project_image_by_id(db: Session, image_id: int) -> ProjectImage:
-    """Получить картинку по ID"""
     image = db.query(ProjectImage).filter(ProjectImage.id == image_id).first()
     if not image:
         raise HTTPException(
@@ -26,16 +24,12 @@ def get_project_image_by_id(db: Session, image_id: int) -> ProjectImage:
     return image
 
 def create_project_image(db: Session, image_in: ProjectImageCreate) -> ProjectImage:
-    """Создать новую картинку проекта"""
-    # Проверяем существование проекта
     project = db.query(Project).filter(Project.id == image_in.project_id).first()
     if not project:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Project with id {image_in.project_id} not found"
         )
-    
-    # Если это основное изображение, снимаем флаг is_primary с других
     if image_in.is_primary:
         db.query(ProjectImage).filter(
             ProjectImage.project_id == image_in.project_id,
@@ -55,7 +49,6 @@ def create_project_image(db: Session, image_in: ProjectImageCreate) -> ProjectIm
     return db_image
 
 def update_project_image(db: Session, image_id: int, image_update: ProjectImageUpdate) -> ProjectImage:
-    """Обновить картинку проекта"""
     image = db.query(ProjectImage).filter(ProjectImage.id == image_id).first()
     if not image:
         raise HTTPException(
@@ -64,8 +57,6 @@ def update_project_image(db: Session, image_id: int, image_update: ProjectImageU
         )
     
     update_data = image_update.dict(exclude_unset=True)
-    
-    # Если устанавливаем is_primary, снимаем флаг с других картинок этого проекта
     if update_data.get("is_primary") is True:
         db.query(ProjectImage).filter(
             ProjectImage.project_id == image.project_id,
@@ -81,7 +72,6 @@ def update_project_image(db: Session, image_id: int, image_update: ProjectImageU
     return image
 
 def delete_project_image(db: Session, image_id: int) -> dict:
-    """Удалить картинку проекта"""
     image = db.query(ProjectImage).filter(ProjectImage.id == image_id).first()
     if not image:
         raise HTTPException(
@@ -93,7 +83,6 @@ def delete_project_image(db: Session, image_id: int) -> dict:
     return {"detail": "Project image deleted successfully"}
 
 def get_primary_image(db: Session, project_id: int) -> Optional[ProjectImage]:
-    """Получить основное изображение проекта"""
     return db.query(ProjectImage).filter(
         ProjectImage.project_id == project_id,
         ProjectImage.is_primary == True

@@ -6,31 +6,18 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 def create_user_review(db: Session, review_in: UserReviewCreate):
-    """Создать отзыв на пользователя"""
-    # Проверяем существование пользователя, который оставляет отзыв
     reviewer = db.query(User).filter(User.id == review_in.reviewer_id).first()
     if not reviewer:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Reviewer with id {review_in.reviewer_id} not found"
         )
-    
-    # Проверяем существование пользователя, на которого оставляют отзыв
     reviewed_user = db.query(User).filter(User.id == review_in.reviewed_user_id).first()
     if not reviewed_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Reviewed user with id {review_in.reviewed_user_id} not found"
         )
-    
-    # Пользователь не может оставить отзыв самому себе
-    # if review_in.reviewer_id == review_in.reviewed_user_id:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_400_BAD_REQUEST,
-    #         detail="User cannot review themselves"
-    #     )
-    
-    # Проверяем, не оставлял ли уже этот пользователь отзыв на этого пользователя
     existing_review = db.query(UserReview).filter(
         UserReview.reviewer_id == review_in.reviewer_id,
         UserReview.reviewed_user_id == review_in.reviewed_user_id
@@ -40,8 +27,6 @@ def create_user_review(db: Session, review_in: UserReviewCreate):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User has already reviewed this user"
         )
-    
-    # Валидация оценки (обычно от 1 до 5)
     if review_in.score < 1 or review_in.score > 5:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -55,16 +40,12 @@ def create_user_review(db: Session, review_in: UserReviewCreate):
         text=review_in.text
     )
     db.add(db_review)
-    db.flush()  # Flush, чтобы получить ID нового отзыва, но не коммитим еще
-
-    # Обновляем статистику пользователя (после flush новый отзыв уже в базе)
+    db.flush()
     reviewed_user.rating = db.query(func.avg(UserReview.score)).filter(
         UserReview.reviewed_user_id == review_in.reviewed_user_id
     ).scalar() or 0.0
-
     db.commit()
     db.refresh(db_review)
-    # Загружаем связанного пользователя (reviewer)
     from sqlalchemy.orm import joinedload
     db_review = db.query(UserReview).options(joinedload(UserReview.reviewer)).filter(
         UserReview.id == db_review.id
@@ -72,21 +53,18 @@ def create_user_review(db: Session, review_in: UserReviewCreate):
     return db_review
 
 def get_reviews_by_user(db: Session, user_id: int):
-    """Получить все отзывы на пользователя"""
     from sqlalchemy.orm import joinedload
     return db.query(UserReview).options(joinedload(UserReview.reviewer)).filter(
         UserReview.reviewed_user_id == user_id
     ).order_by(UserReview.created_at.desc()).all()
 
 def get_reviews_by_reviewer(db: Session, reviewer_id: int):
-    """Получить все отзывы, которые оставил пользователь"""
     from sqlalchemy.orm import joinedload
     return db.query(UserReview).options(joinedload(UserReview.reviewer)).filter(
         UserReview.reviewer_id == reviewer_id
     ).order_by(UserReview.created_at.desc()).all()
 
 def get_user_review_by_id(db: Session, review_id: int):
-    """Получить отзыв по ID"""
     from sqlalchemy.orm import joinedload
     review = db.query(UserReview).options(joinedload(UserReview.reviewer)).filter(
         UserReview.id == review_id
@@ -99,15 +77,12 @@ def get_user_review_by_id(db: Session, review_id: int):
     return review
 
 def update_user_review(db: Session, review_id: int, review_update: UserReviewUpdate):
-    """Обновить отзыв пользователя"""
     review = db.query(UserReview).filter(UserReview.id == review_id).first()
     if not review:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Review with id {review_id} not found"
         )
-    
-    # Обновляем поля, если они предоставлены
     if review_update.score is not None:
         if review_update.score < 1 or review_update.score > 5:
             raise HTTPException(
@@ -118,8 +93,6 @@ def update_user_review(db: Session, review_id: int, review_update: UserReviewUpd
     
     if review_update.text is not None:
         review.text = review_update.text
-    
-    # Обновляем рейтинг пользователя
     reviewed_user = db.query(User).filter(User.id == review.reviewed_user_id).first()
     if reviewed_user:
         reviewed_user.rating = db.query(func.avg(UserReview.score)).filter(
@@ -128,7 +101,6 @@ def update_user_review(db: Session, review_id: int, review_update: UserReviewUpd
     
     db.commit()
     db.refresh(review)
-    
     from sqlalchemy.orm import joinedload
     review = db.query(UserReview).options(joinedload(UserReview.reviewer)).filter(
         UserReview.id == review_id
@@ -136,7 +108,6 @@ def update_user_review(db: Session, review_id: int, review_update: UserReviewUpd
     return review
 
 def delete_user_review(db: Session, review_id: int):
-    """Удалить отзыв пользователя"""
     review = db.query(UserReview).filter(UserReview.id == review_id).first()
     if not review:
         raise HTTPException(
@@ -146,8 +117,6 @@ def delete_user_review(db: Session, review_id: int):
     
     reviewed_user_id = review.reviewed_user_id
     db.delete(review)
-    
-    # Обновляем рейтинг пользователя
     reviewed_user = db.query(User).filter(User.id == reviewed_user_id).first()
     if reviewed_user:
         reviewed_user.rating = db.query(func.avg(UserReview.score)).filter(

@@ -6,10 +6,11 @@ from app.schemas.user import UserOut
 
 class MessageBase(BaseModel):
     content: str
-
+    type : str
 
 class MessageCreate(MessageBase):
     chat_id: int
+    type : str
 
 
 class MessageOut(MessageBase):
@@ -19,7 +20,7 @@ class MessageOut(MessageBase):
     created_at: datetime
     is_read: int
     sender: Optional[UserOut] = None
-    
+    type : str
     model_config = {
         "from_attributes": True
     }
@@ -41,11 +42,9 @@ class ChatOut(ChatBase):
     user1: Optional[UserOut] = None
     user2: Optional[UserOut] = None
     messages: Optional[List[MessageOut]] = None
-    
     model_config = {
         "from_attributes": True
     }
-
 
 class ChatListOut(BaseModel):
     id: int
@@ -53,10 +52,8 @@ class ChatListOut(BaseModel):
     user2_id: int
     created_at: datetime
     updated_at: Optional[datetime] = None
-    last_message: Optional[MessageOut] = None
     unread_count: int = 0
     other_user: Optional[UserOut] = None
-    
     model_config = {
         "from_attributes": True
     }

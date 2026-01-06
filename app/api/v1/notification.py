@@ -22,9 +22,6 @@ def create_notification(
     payload: NotificationCreate,
     db: Session = Depends(get_db),
 ):
-    """
-    Создать уведомление для пользователя (user_id внутри payload).
-    """
     return crud_notifications.create_notification(db, payload)
 
 
@@ -48,9 +45,7 @@ def get_notification(
     notification_id: int,
     db: Session = Depends(get_db),
 ):
-    """
-    Получить уведомление по ID.
-    """
+    
     return crud_notifications.get_notification_by_id(db, notification_id)
 
 
@@ -65,9 +60,7 @@ def get_user_notifications(
     limit: int = Query(50, le=100),
     only_unread: bool = False,
 ):
-    """
-    Получить уведомления по ID пользователя.
-    """
+    
     return crud_notifications.get_notifications_for_user(
         db=db,
         user_id=user_id,
@@ -86,9 +79,7 @@ def update_notification(
     payload: NotificationUpdate,
     db: Session = Depends(get_db),
 ):
-    """
-    Обновить уведомление (например, пометить как прочитанное) по ID уведомления и ID пользователя.
-    """
+    
     notif = crud_notifications.get_notification_by_id(db, notification_id)
     if notif.user_id != payload.user_id:
         from fastapi import HTTPException
@@ -110,9 +101,6 @@ def mark_all_read(
     user_id: int = Query(..., description="ID пользователя"),
     db: Session = Depends(get_db),
 ):
-    """
-    Пометить все уведомления пользователя как прочитанные по user_id.
-    """
     updated = crud_notifications.mark_all_user_notifications_read(
         db=db,
         user_id=user_id,
@@ -128,9 +116,6 @@ def delete_notification(
     user_id: int = Query(..., description="ID пользователя-владельца уведомления"),
     db: Session = Depends(get_db),
 ):
-    """
-    Удалить уведомление по ID для конкретного пользователя.
-    """
     notif = crud_notifications.get_notification_by_id(db, notification_id)
     if notif.user_id != user_id:
         from fastapi import HTTPException

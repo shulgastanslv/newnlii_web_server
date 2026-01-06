@@ -7,4 +7,4 @@ class Category(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     parent_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
-    subcategories = relationship("Category", backref=backref("parent", remote_side=[id]))
+    subcategories = relationship("Category", backref=backref("parent", remote_side=[id]), lazy="noload")

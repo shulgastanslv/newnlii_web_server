@@ -5,9 +5,7 @@ from app.crud.user import get_user_by_wallet
 from app.models.project import Project
 from app.models.skill import Skill
 from app.models.tag import Tag
-from app.schemas.project import ProjectCreate, ProjectOut, ProjectUpdate
-from app.redis_client import redis_client
-
+from app.schemas.project import ProjectCreate, ProjectUpdate
 
 def add_view(db: Session, project_id: int):
     project = db.query(Project).filter(Project.id == project_id).first()

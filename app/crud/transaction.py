@@ -32,11 +32,8 @@ def update_transaction(db: Session, transaction_id: int, transaction_update: Tra
     transaction = get_transaction_by_id(db, transaction_id)
     for key, value in transaction_update.dict(exclude_unset=True).items():
         setattr(transaction, key, value)
-    
-    # Если статус обновляется на confirmed, устанавливаем confirmed_at
     if transaction_update.status == TransactionStatus.confirmed and not transaction.confirmed_at:
         transaction.confirmed_at = datetime.utcnow()
-    
     db.commit()
     db.refresh(transaction)
     return transaction
@@ -45,14 +42,10 @@ def update_transaction_by_hash(db: Session, transaction_hash: str, transaction_u
     transaction = get_transaction_by_hash(db, transaction_hash)
     if not transaction:
         raise HTTPException(status_code=404, detail="Transaction not found")
-    
     for key, value in transaction_update.dict(exclude_unset=True).items():
         setattr(transaction, key, value)
-    
-    # Если статус обновляется на confirmed, устанавливаем confirmed_at
     if transaction_update.status == TransactionStatus.confirmed and not transaction.confirmed_at:
         transaction.confirmed_at = datetime.utcnow()
-    
     db.commit()
     db.refresh(transaction)
     return transaction

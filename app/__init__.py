@@ -17,4 +17,6 @@ from app.models.portfolio import *
 from app.models.chat.chat import *
 from app.models.notification import *
 from app.models.request import *
+
+
 Base.metadata.create_all(bind=engine)

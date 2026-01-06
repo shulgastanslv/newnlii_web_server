@@ -5,9 +5,8 @@ from app.models.user import User
 from app.schemas.chat.chat import ChatCreate, MessageCreate, MessageOut, ChatListOut
 from app.schemas.user import UserOut
 from fastapi import HTTPException
-from typing import List, Optional
+from typing import List
 from datetime import datetime
-
 
 def create_chat(db: Session, chat: ChatCreate):
     existing_chat = get_chat_by_users(db, chat.user1_id, chat.user2_id)
@@ -20,13 +19,11 @@ def create_chat(db: Session, chat: ChatCreate):
     db.refresh(db_chat)
     return db_chat
 
-
 def get_chat_by_id(db: Session, chat_id: int):
     chat = db.query(Chat).filter(Chat.id == chat_id).first()
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
     return chat
-
 
 def get_chat_by_users(db: Session, user1_id: int, user2_id: int):
     return db.query(Chat).filter(
@@ -35,7 +32,6 @@ def get_chat_by_users(db: Session, user1_id: int, user2_id: int):
             and_(Chat.user1_id == user2_id, Chat.user2_id == user1_id)
         )
     ).first()
-
 
 def get_user_chats(db: Session, user_id: int) -> List[ChatListOut]:
     chats = db.query(Chat).filter(
@@ -73,7 +69,6 @@ def get_user_chats(db: Session, user_id: int) -> List[ChatListOut]:
     
     return result
 
-
 def create_message(db: Session, message: MessageCreate, sender_id: int):
     chat = get_chat_by_id(db, message.chat_id)
     chat.updated_at = datetime.now()
@@ -82,19 +77,18 @@ def create_message(db: Session, message: MessageCreate, sender_id: int):
         chat_id=message.chat_id,
         sender_id=sender_id,
         content=message.content,
-        is_read=0
+        is_read=0,
+        type=message.type
     )
     db.add(db_message)
     db.commit()
     db.refresh(db_message)
     return db_message
 
-
 def get_chat_messages(db: Session, chat_id: int, limit: int = 100, offset: int = 0):
     return db.query(Message).filter(
         Message.chat_id == chat_id
     ).order_by(Message.created_at.desc()).offset(offset).limit(limit).all()
-
 
 def mark_messages_as_read(db: Session, chat_id: int, user_id: int):
     db.query(Message).filter(

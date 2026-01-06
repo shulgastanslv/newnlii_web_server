@@ -1,14 +1,11 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-
 from app.models.notification import Notification
 from app.schemas.notification import (
     NotificationCreate,
-    NotificationUpdate,
     NotificationOut,
 )
-
 
 def create_notification(db: Session, data: NotificationCreate) -> NotificationOut:
     db_obj = Notification(
@@ -23,7 +20,6 @@ def create_notification(db: Session, data: NotificationCreate) -> NotificationOu
     db.refresh(db_obj)
     return NotificationOut.model_validate(db_obj)
 
-
 def get_notification_by_id(db: Session, notif_id: int) -> NotificationOut:
     notif = db.query(Notification).filter(Notification.id == notif_id).first()
     if not notif:
@@ -32,7 +28,6 @@ def get_notification_by_id(db: Session, notif_id: int) -> NotificationOut:
             detail="Notification not found",
         )
     return NotificationOut.model_validate(notif)
-
 
 def get_notifications_for_user(
     db: Session,
@@ -43,7 +38,7 @@ def get_notifications_for_user(
 ) -> List[NotificationOut]:
     query = db.query(Notification).filter(Notification.user_id == user_id)
     if only_unread:
-        query = query.filter(Notification.is_read == False)  # noqa: E712
+        query = query.filter(Notification.is_read == False)
 
     notifications = (
         query.order_by(Notification.created_at.desc())
@@ -52,7 +47,6 @@ def get_notifications_for_user(
         .all()
     )
     return [NotificationOut.model_validate(n) for n in notifications]
-
 
 def mark_notification_read(
     db: Session,
@@ -74,7 +68,7 @@ def mark_notification_read(
 def mark_all_user_notifications_read(db: Session, user_id: int) -> int:
     query = db.query(Notification).filter(
         Notification.user_id == user_id,
-        Notification.is_read == False,  # noqa: E712
+        Notification.is_read == False,
     )
     updated = query.update({"is_read": True}, synchronize_session=False)
     db.commit()
