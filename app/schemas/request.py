@@ -26,7 +26,6 @@ class RequestOut(RequestBase):
         "from_attributes": True
     }
 
-
 class RequestDevID(BaseModel):
     dev_id : int
     project_id : int

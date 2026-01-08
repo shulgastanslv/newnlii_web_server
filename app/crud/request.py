@@ -30,7 +30,7 @@ def get_all_requests(db: Session):
 def get_client_requests(db: Session, user_id: int):
     return db.query(Request).filter(Request.client_id == user_id).all()
 
-def get_developer_requests(db: Session, address: str):
+def get_requests_by_address(db: Session, address: str):
     user_id = db.query(User).filter(User.wallet_address == address).first().id
     return db.query(Request).filter(Request.developer_id == user_id).all()
 
@@ -43,8 +43,21 @@ def delete_request(db: Session, request_id: int):
     db.commit()
     return res
 
-def get_user_stats(db: Session, address: str):
+def get_monthly_requests(db: Session, address: str):
     user_id = db.query(User).filter(User.wallet_address == address).first().id
     monthly_requests = db.query(User).filter(User.id == user_id).first().monthly_requests_count
+    return monthly_requests
+
+def get_total_requests(db: Session, address: str):
+    user_id = db.query(User).filter(User.wallet_address == address).first().id
     total_requests = db.query(User).filter(User.id == user_id).first().request_count
-    return {"monthly_requests": monthly_requests, "total_requests": total_requests}
+    return total_requests
+
+def request_exists(db: Session, address: str, project_id : int):
+    user_id = db.query(User).filter(User.wallet_address == address).first().id
+    return db.query(Request).filter(Request.developer_id == user_id and Request.project_id == project_id).first()
+
+def get_last_request_id(db: Session, address: str):
+    user_id = db.query(User).filter(User.wallet_address == address).first().id
+    req = db.query(Request).filter(Request.developer_id == user_id).order_by(Request.id.desc()).first().created_at
+    return str(req)
