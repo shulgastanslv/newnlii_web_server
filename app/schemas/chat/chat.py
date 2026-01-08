@@ -20,7 +20,7 @@ class MessageOut(MessageBase):
     created_at: datetime
     is_read: int
     sender: Optional[UserOut] = None
-    type : str
+    type : Optional[str]
     model_config = {
         "from_attributes": True
     }

@@ -30,5 +30,4 @@ def get_request_by_dev_id(req : RequestDevID, db: Session = Depends(get_db)):
 
 @router.get("/user/{address}/stats")
 def get_user_stats(address: str, db: Session = Depends(get_db)):
-    
     return crud_request.get_user_stats(db, address)

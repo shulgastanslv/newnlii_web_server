@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
-
 from app.models.request import RequestStatus
+from app.schemas.common import ProjectShort
 from app.schemas.project import ProjectOut
 from app.schemas.user import UserOut
 
@@ -19,7 +19,7 @@ class RequestCreate(RequestBase):
 
 class RequestOut(RequestBase):
     id: int
-    project: ProjectOut
+    project: ProjectShort
     client: UserOut
     developer: UserOut
     model_config = {

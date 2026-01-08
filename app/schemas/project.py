@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, constr
+from app.schemas.category import CategoryOut
 from app.schemas.skill import SkillOut
 from app.schemas.tag import Tag
 from app.schemas.user import UserOut
@@ -53,6 +54,7 @@ class ProjectOut(ProjectBase):
     reviews_count: Optional[int] = None
     rating: Optional[float] = None
     images: Optional[List[ProjectImageOut]] = None
+    category : Optional[CategoryOut] = None
     model_config = {
          "use_enum_values": True,
         "from_attributes" : True

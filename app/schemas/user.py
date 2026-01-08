@@ -1,21 +1,11 @@
 from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel
+from app.models.specialization import Specialization
 from app.models.user import UserRole, UserStatus
+from app.schemas.common import ProjectShort
 from app.schemas.skill import SkillOut
-from app.schemas.project_image import ProjectImageOut
-
-class ProjectShort(BaseModel):
-    id: int
-    name: str
-    category_id: int
-    description: str
-    budget: float
-    crypto_type: int
-    images: Optional[List[ProjectImageOut]] = None
-    visible : bool
-    model_config = {"from_attributes": True}
-
+from app.schemas.specialization import SpecializationOut
 
 class UserBase(BaseModel):
     id : Optional[int] = None
@@ -31,10 +21,14 @@ class UserBase(BaseModel):
     completed_orders_count: int = 0
     repeat_orders: int = 0
     rating: float = 0.0
+    favorites_count : int
     verified: bool = False
     description: Optional[str] = "No description"
     projects: Optional[List[ProjectShort]] = None
     skills: Optional[List[SkillOut]] = None
+    specializations: Optional[List[SpecializationOut]] = None
+    request_count : int
+    monthly_requests_count : int
     model_config = {
             "use_enum_values": True,
         "from_attributes": True
@@ -55,7 +49,6 @@ class UserUpdate(BaseModel):
     region: Optional[str] = None
     timezone: Optional[str] = None
     status: Optional[str] = None
-    
     name: Optional[str] = None
 
 class UserOut(UserBase):
