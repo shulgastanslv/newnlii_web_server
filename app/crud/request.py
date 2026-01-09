@@ -53,11 +53,24 @@ def get_total_requests(db: Session, address: str):
     total_requests = db.query(User).filter(User.id == user_id).first().request_count
     return total_requests
 
-def request_exists(db: Session, address: str, project_id : int):
-    user_id = db.query(User).filter(User.wallet_address == address).first().id
-    return db.query(Request).filter(Request.developer_id == user_id and Request.project_id == project_id).first()
+def request_exists(db: Session, address: str, project_id: int):
+    user = db.query(User).filter(User.wallet_address == address).first()
+    if not user:
+        return None
+
+    return (
+        db.query(Request)
+        .filter(
+            Request.developer_id == user.id,
+            Request.project_id == project_id
+        )
+        .first()
+    )
 
 def get_last_request_id(db: Session, address: str):
     user_id = db.query(User).filter(User.wallet_address == address).first().id
-    req = db.query(Request).filter(Request.developer_id == user_id).order_by(Request.id.desc()).first().created_at
-    return str(req)
+    request = db.query(Request).filter(Request.developer_id == user_id).order_by(Request.id.desc()).first()
+    if request:
+        req = db.query(Request).filter(Request.developer_id == user_id).order_by(Request.id.desc()).first().created_at
+        return str(req)
+    return str("No requests")

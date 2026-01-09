@@ -10,8 +10,8 @@ class Status(enum.Enum):
     completed = "completed"
     cancelled = "cancelled"
     paid = "paid"
-    
 from sqlalchemy import Enum
+    
 
 class Order(Base):
     __tablename__ = "orders"

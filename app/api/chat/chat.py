@@ -29,7 +29,6 @@ class ConnectionManager:
         users = self.connections.get(chat_id)
         if not users:
             return
-
         users.pop(user_id, None)
         if not users:
             self.connections.pop(chat_id, None)
@@ -51,7 +50,6 @@ manager = ConnectionManager()
 def create_chat(chat: ChatCreate, db: Session = Depends(get_db)):
     return crud_chat.create_chat(db, chat)
 
-
 @router.get("/chats/{chat_id}", response_model=ChatOut)
 def get_chat(chat_id: int, db: Session = Depends(get_db)):
     return crud_chat.get_chat_by_id(db, chat_id)
@@ -63,12 +61,7 @@ def get_user_chats(user_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/chats/{chat_id}/messages", response_model=List[MessageOut])
-def get_chat_messages(
-    chat_id: int,
-    limit: int = 100,
-    offset: int = 0,
-    db: Session = Depends(get_db),
-):
+def get_chat_messages(chat_id: int, limit: int = 100, offset: int = 0, db: Session = Depends(get_db)):
     messages = crud_chat.get_chat_messages(db, chat_id, limit, offset)
     return list(reversed(messages))
 
@@ -90,28 +83,20 @@ async def websocket_endpoint(ws: WebSocket, chat_id: int, user_id: int):
         db.close()
 
     await manager.connect(chat_id, user_id, ws)
-
-    await manager.broadcast(
-        chat_id,
-        {"type": "user_connected", "user_id": user_id},
-        exclude=user_id,
-    )
+    await manager.broadcast(chat_id, {"type": "user_connected", "user_id": user_id}, exclude=user_id)
 
     try:
         while True:
             data = json.loads(await ws.receive_text())
             msg_type = data.get("type")
 
-            if msg_type == "message":
+            if msg_type == "text":
                 db = SessionLocal()
                 try:
                     message = crud_chat.create_message(
                         db,
-                        MessageCreate(
-                            chat_id=chat_id,
-                            content=data.get("content", ""),
-                        ),
-                        user_id,
+                        MessageCreate(chat_id=chat_id, content=data.get("content", ""), type=msg_type),
+                        sender_id=user_id
                     )
                 finally:
                     db.close()
@@ -119,7 +104,7 @@ async def websocket_endpoint(ws: WebSocket, chat_id: int, user_id: int):
                 await manager.broadcast(
                     chat_id,
                     {
-                        "type": "message",
+                        "type": "text",
                         "id": message.id,
                         "chat_id": chat_id,
                         "sender_id": user_id,
@@ -130,11 +115,7 @@ async def websocket_endpoint(ws: WebSocket, chat_id: int, user_id: int):
                 )
 
             elif msg_type == "typing":
-                await manager.broadcast(
-                    chat_id,
-                    {"type": "typing", "user_id": user_id},
-                    exclude=user_id,
-                )
+                await manager.broadcast(chat_id, {"type": "typing", "user_id": user_id}, exclude=user_id)
 
             elif msg_type == "read":
                 db = SessionLocal()
@@ -143,17 +124,10 @@ async def websocket_endpoint(ws: WebSocket, chat_id: int, user_id: int):
                 finally:
                     db.close()
 
-                await manager.broadcast(
-                    chat_id,
-                    {"type": "read", "user_id": user_id},
-                    exclude=user_id,
-                )
+                await manager.broadcast(chat_id, {"type": "read", "user_id": user_id}, exclude=user_id)
 
     except WebSocketDisconnect:
         pass
     finally:
         manager.disconnect(chat_id, user_id)
-        await manager.broadcast(
-            chat_id,
-            {"type": "user_disconnected", "user_id": user_id},
-        )
+        await manager.broadcast(chat_id, {"type": "user_disconnected", "user_id": user_id})

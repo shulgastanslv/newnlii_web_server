@@ -51,6 +51,7 @@ class ChatListOut(BaseModel):
     user1_id: int
     user2_id: int
     created_at: datetime
+    last_message: Optional[MessageOut]
     updated_at: Optional[datetime] = None
     unread_count: int = 0
     other_user: Optional[UserOut] = None
