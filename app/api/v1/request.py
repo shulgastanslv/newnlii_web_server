@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db
 from typing import List
 from app.crud import request as crud_request
-from app.schemas.request import RequestCreate, RequestDevID, RequestExisting, RequestOut
+from app.schemas.request import BuyRequest, RequestCreate, RequestDevID, RequestExisting, RequestOut
 
 router = APIRouter()
 
@@ -37,3 +37,7 @@ def request_exists_route(address: str, project_id : int, db: Session = Depends(g
 @router.get("/last-request/{address}", response_model=str)
 def get_last_request_id_route(address: str, db: Session = Depends(get_db)):
     return crud_request.get_last_request_id(db, address)
+
+@router.post("/buy-request", response_model=bool)
+def buy_request(value: BuyRequest, db: Session = Depends(get_db)):
+    return crud_request.buy_request(db, value)

@@ -16,7 +16,7 @@ class UserReviewOut(BaseModel):
     score: float
     text: str
     created_at: datetime
-    reviewer: UserOut  # Пользователь, который оставил отзыв
+    reviewer: UserOut
     
     model_config = {
         "from_attributes": True

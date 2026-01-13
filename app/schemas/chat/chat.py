@@ -12,7 +12,6 @@ class MessageCreate(MessageBase):
     chat_id: int
     type : str
 
-
 class MessageOut(MessageBase):
     id: int
     chat_id: int
@@ -24,7 +23,6 @@ class MessageOut(MessageBase):
     model_config = {
         "from_attributes": True
     }
-
 
 class ChatBase(BaseModel):
     user1_id: int

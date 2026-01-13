@@ -2,6 +2,13 @@ from datetime import datetime
 from sqlalchemy import Boolean, Column, Float, Integer, String, DateTime, Table, Text, func, ForeignKey, inspect
 from app.db.base import Base
 from sqlalchemy.orm import relationship, backref
+import enum
+
+class JobType(enum.Enum):
+    hourly = "hourly"
+    fixed = "fixed"
+
+from sqlalchemy import Enum
 
 class Project(Base):
     __tablename__ = "projects"
@@ -17,7 +24,13 @@ class Project(Base):
     rating = Column(Float, default=0.0)
     reviews_count = Column(Integer, default=0)
     is_favorite = Column(Boolean, default=False)
-    features = Column(Text, nullable=True) 
+    features = Column(Text, nullable=True)
+    job_type = Column(Enum(JobType, name="status_enum"), default=JobType.fixed, nullable=False)
+    hourly_rate_min = Column(Float, default=0.0)
+    hourly_rate_max = Column(Float, default=0.0)
+    isConsultation = Column(Boolean, default=False)
+
+    experience_level=Column(Text, nullable=True) 
     estimated_duration = Column(String, nullable=True)
     likes_count = Column(Integer, default=0, nullable=False)
     visible = Column(Boolean, default=True, nullable=False)

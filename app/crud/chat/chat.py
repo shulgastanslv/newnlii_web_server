@@ -27,6 +27,9 @@ def get_chat_by_id(db: Session, chat_id: int):
         raise HTTPException(status_code=404, detail="Chat not found")
     return chat
 
+def get_all_chats(db: Session):
+    return db.query(Chat).order_by(Chat.updated_at.desc()).all()
+
 def get_chat_by_users(db: Session, user1_id: int, user2_id: int):
     user1, user2 = sorted([user1_id, user2_id])
     return db.query(Chat).filter(
@@ -89,7 +92,7 @@ def create_message(db: Session, message: MessageCreate, sender_id: int):
     )
 
     db.add(db_message)
-    db.flush()  # 🔥
+    db.flush()
 
     chat.last_message_id = db_message.id 
     chat.updated_at = func.now()
@@ -107,7 +110,7 @@ def get_chat_messages(
     return (
         db.query(Message)
         .filter(Message.chat_id == chat_id)
-        .order_by(Message.created_at.asc())
+        .order_by(Message.created_at.desc())
         .offset(offset)
         .limit(limit)
         .all()

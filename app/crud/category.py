@@ -1,4 +1,4 @@
-from sqlalchemy import func
+from sqlalchemy import func, join
 from sqlalchemy.orm import Session
 from app.models.category import Category
 from app.models.project import Project

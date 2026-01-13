@@ -7,7 +7,6 @@ from app.schemas.user import UserOut
 from app.schemas.project_image import ProjectImageOut
 
 class OrderBase(BaseModel):
-    id : Optional[int]
     project_id: int
     client_id: int
     developer_id: int

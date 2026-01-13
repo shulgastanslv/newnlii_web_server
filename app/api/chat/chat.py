@@ -13,7 +13,7 @@ from app.schemas.chat.chat import (
     ChatListOut,
 )
 from app.crud.chat import chat as crud_chat
-
+from app.crud.user import get_user_by_id
 router = APIRouter()
 
 
@@ -59,17 +59,18 @@ def get_chat(chat_id: int, db: Session = Depends(get_db)):
 def get_user_chats(user_id: int, db: Session = Depends(get_db)):
     return crud_chat.get_user_chats(db, user_id)
 
+@router.get("/chats/", response_model=List[ChatListOut])
+def get_all_chats_route(db: Session = Depends(get_db)):
+    return crud_chat.get_all_chats(db)
 
 @router.get("/chats/{chat_id}/messages", response_model=List[MessageOut])
 def get_chat_messages(chat_id: int, limit: int = 100, offset: int = 0, db: Session = Depends(get_db)):
     messages = crud_chat.get_chat_messages(db, chat_id, limit, offset)
     return list(reversed(messages))
 
-
 @router.post("/chats/{chat_id}/read")
 def mark_as_read(chat_id: int, user_id: int, db: Session = Depends(get_db)):
     return crud_chat.mark_messages_as_read(db, chat_id, user_id)
-
 
 @router.websocket("/ws/{chat_id}/{user_id}")
 async def websocket_endpoint(ws: WebSocket, chat_id: int, user_id: int):
@@ -95,12 +96,11 @@ async def websocket_endpoint(ws: WebSocket, chat_id: int, user_id: int):
                 try:
                     message = crud_chat.create_message(
                         db,
-                        MessageCreate(chat_id=chat_id, content=data.get("content", ""), type=msg_type),
+                        MessageCreate(chat_id=chat_id, content=data.get("content", ""), type="text"),
                         sender_id=user_id
                     )
                 finally:
                     db.close()
-
                 await manager.broadcast(
                     chat_id,
                     {
@@ -113,9 +113,36 @@ async def websocket_endpoint(ws: WebSocket, chat_id: int, user_id: int):
                         "is_read": message.is_read,
                     },
                 )
-
             elif msg_type == "typing":
                 await manager.broadcast(chat_id, {"type": "typing", "user_id": user_id}, exclude=user_id)
+            elif msg_type == "order":
+                db = SessionLocal()
+                try:
+                    message = crud_chat.create_message(
+                        db,
+                        MessageCreate(chat_id=chat_id, content=data.get("content", ""), type="order"),
+                        sender_id=user_id
+                    )
+                finally:
+                    db.close()
+                sender = get_user_by_id(db, user_id)
+                await manager.broadcast(
+                    chat_id,
+                    {
+                           "type": message.type,
+                            "id": message.id,
+                            "chat_id": chat_id,
+                            "sender_id": user_id,
+                            "sender": {
+                                "id": sender.id,
+                                "name": sender.name,
+                                "image_url": sender.image_url,
+                            },
+                            "content": message.content,
+                            "created_at": message.created_at.isoformat(),
+                            "is_read": message.is_read,
+                    },
+                )
 
             elif msg_type == "read":
                 db = SessionLocal()

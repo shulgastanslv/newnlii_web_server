@@ -50,6 +50,11 @@ def create_user_review(db: Session, review_in: UserReviewCreate):
     db_review = db.query(UserReview).options(joinedload(UserReview.reviewer)).filter(
         UserReview.id == db_review.id
     ).first()
+    user = db.query(User).filter(User.id == review_in.reviewed_user_id).first()
+    user.level = user.level + 1
+    db.add(user)
+    db.commit()
+    db.refresh(user)
     return db_review
 
 def get_reviews_by_user(db: Session, user_id: int):

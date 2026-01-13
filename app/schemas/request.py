@@ -29,5 +29,10 @@ class RequestOut(RequestBase):
 class RequestDevID(BaseModel):
     dev_id : int
     project_id : int
+
 class RequestExisting(RequestBase):
     id: int
+
+class BuyRequest(BaseModel):
+    address: str
+    count: int

@@ -42,11 +42,11 @@ def delete_order(order_id: int, db: Session = Depends(get_db)):
     return crud_order.delete_order(db, order_id)
 
 @router.post("/{order_id}/deliver", response_model=OrderOut)
-def deliver_order(order_id: int, git_url: str, db: Session = Depends(get_db)):
+def deliver_order(order_id: int, db: Session = Depends(get_db)):
     order = crud_order.get_order_by_id(db, order_id)
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    return crud_order.update_order_status(db, order_id, status="completed", git_url=git_url)
+    return crud_order.update_order_status(db, order_id, status="in_progress")
 
 @router.post("/{order_id}/pay")
 async def pay_order(
@@ -68,4 +68,4 @@ def accept_order(order_id: int, db: Session = Depends(get_db)):
     order = crud_order.get_order_by_id(db, order_id)
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    return crud_order.update_order_status(db, order_id, status="closed")
+    return crud_order.update_order_status(db, order_id, status="paid")

@@ -27,7 +27,7 @@ class UserBase(BaseModel):
     projects: Optional[List[ProjectShort]] = None
     skills: Optional[List[SkillOut]] = None
     specializations: Optional[List[SpecializationOut]] = None
-    request_count : int
+    total_request_count : int
     monthly_requests_count : int
     model_config = {
             "use_enum_values": True,
@@ -54,6 +54,6 @@ class UserUpdate(BaseModel):
 class UserOut(UserBase):
     id: int
     created_at: datetime
-    request_count : int
+    total_request_count : int
     model_config = {"from_attributes": True}
 

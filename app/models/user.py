@@ -35,7 +35,7 @@ class User(Base):
     repeat_orders = Column(Integer,nullable=False, default=0)
     rating = Column(Float, nullable=False, default=0.0)
     verified = Column(Boolean,nullable=False, default=False)
-    request_count = Column(Integer, nullable=False, default=0)
+    total_request_count = Column(Integer, nullable=False, default=0)
     monthly_requests_count = Column(Integer, nullable=False, default=0)
     user_reviews = relationship('ProjectReview', backref='user')
     reviews_received = relationship('UserReview', foreign_keys='UserReview.reviewed_user_id', back_populates='reviewed_user')

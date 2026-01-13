@@ -12,8 +12,10 @@ def create_user(db: Session, user: UserCreate):
             role=user.role,
             status=user.status,
             banner_url = user.banner_url,
-            level=user.level,
+            level=0,
             image_url=user.image_url,
+            total_request_count = 0,
+            monthly_requests_count = 20
         )
         db.add(db_user)
         db.commit()
@@ -39,6 +41,9 @@ def login_or_create_user(wallet_address: str, db: Session):
         role=UserRole.developer,
         name=f'{wallet_address}',
         status=UserStatus.online,
+        total_request_count = 0,
+        level=0,
+        monthly_requests_count = 20
     )
     user = create_user(db, user_in)
     if not user:
