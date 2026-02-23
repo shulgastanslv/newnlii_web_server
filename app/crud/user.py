@@ -15,6 +15,7 @@ def create_user (user : UserCreate, db : Session):
           password = user.password,
           email = user.email,
         )
+        print(str(db_user))
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
@@ -22,15 +23,11 @@ def create_user (user : UserCreate, db : Session):
     except (DataError, IntegrityError) as e:
         db.rollback()
         raise HTTPException(status_code=400, detail=f"User error while creating: {str(e)}")
-
-def get_user_by_username(db: Session, username: str):
-    user = db.query(User).filter(User.username == username).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
-
-def get_user_by_id(db: Session, id: str):
-    user = db.query(User).filter(User.id == id).first()
+    
+def get_user_by_email(db: Session, email: str):
+    print("get by email")
+    user = db.query(User).filter(User.email == email).first()
+    print(email)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user

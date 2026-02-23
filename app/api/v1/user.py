@@ -15,3 +15,7 @@ def get_all_users_route(db: Session = Depends(get_db)):
 @router.post("/", response_model=UserOut)
 def create_user_route(user : UserCreate, db: Session = Depends(get_db)):
     return crud_user.create_user(user, db)
+
+@router.get("/", response_model=UserOut)
+def get_user_by_email(email : str, db: Session = Depends(get_db)):
+    return crud_user.get_user_by_email(db, email)
