@@ -1,14 +1,14 @@
 [Unit]
-Description=Devsy Web Server - Main API Server
+Description=Newnlii Web Server - Main API Server
 After=network.target postgresql.service
 Wants=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/root/Projects/devsy_web_server
-Environment="PATH=/root/Projects/devsy_web_server/.venv/bin:/usr/local/bin:/usr/bin:/bin"
-Environment="PYTHONPATH=/root/Projects/devsy_web_server"
-ExecStart=/root/Projects/devsy_web_server/.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 4
+WorkingDirectory=/root/Projects/newnlii_web_server
+Environment="PATH=/root/Projects/newnlii_web_server/.venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONPATH=/root/Projects/newnlii_web_server"
+ExecStart=/root/Projects/newnlii_web_server/.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 4
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=mixed
 KillSignal=SIGINT
@@ -17,7 +17,7 @@ Restart=on-failure
 RestartSec=5
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=devsy-web-server
+SyslogIdentifier=newnlii-web-server
 
 # Run as root with full privileges
 User=root

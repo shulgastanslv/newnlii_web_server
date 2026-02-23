@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "========================================"
-echo "Starting Devsy Web Server (Production)"
+echo "Starting Newnlii Web Server (Production)"
 echo "========================================"
 
 if [ ! -d ".venv" ]; then

@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1 import common, notification,request, project, skill, user, category, specialization, user_skills, user_specializations, order, project_review, user_review, favorite, project_image, transaction, faq
+from app.api.v1 import common, contact, notification,request, project, skill, user, category, specialization, user_skills, user_specializations, order, project_review, user_review, favorite, project_image, transaction, faq
 from app.api.mistral_AI import router as mistral
 from app.api.v1 import tags
 from app.api.v1 import portfolio
@@ -28,3 +28,4 @@ api_router.include_router(request.router, prefix="/requests", tags=["Requests"])
 api_router.include_router(common.router, prefix="/common", tags=["Common"])
 api_router.include_router(portfolio.router, prefix="/portfolio", tags=["Portfolio"])
 api_router.include_router(chat.router, tags=["Chat"])
+api_router.include_router(contact.router, prefix="/contacts", tags=["Contacts"])

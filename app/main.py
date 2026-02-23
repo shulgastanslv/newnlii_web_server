@@ -7,12 +7,12 @@ import os
 
 cors_origins = [
     "http://localhost:3000",
-    "https://devsy-five.vercel.app",
+    # "https://devsy-five.vercel.app",
     "https://*.vercel.app",
 ]
 
 app = FastAPI(
-    title="Devsy Web Server API",
+    title="Newnlii Web Server API",
     version="1.0.0"
 )
 
@@ -29,7 +29,7 @@ app.include_router(api_router)
 @app.get("/")
 def root():
     return {
-        "message": "Devsy Web Server API",
+        "message": "Newnlii Web Server API",
         "docs": "/docs",
         "version": "1.0.0"
     }

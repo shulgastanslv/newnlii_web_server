@@ -1,6 +1,6 @@
 @echo off
 echo ========================================
-echo Starting Devsy Web Server...
+echo Starting Newnlii Web Server...
 echo ========================================
 
 
@@ -19,7 +19,7 @@ REM
 
 REM
 echo Starting Main API Server...
-start "Devsy Main API" cmd /k "fastapi dev .\app\main.py"
+start "Newnlii Main API" cmd /k "fastapi dev .\app\main.py"
 
 REM
 timeout /t 2 /nobreak >nul

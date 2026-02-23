@@ -1,6 +1,6 @@
 @echo off
 echo ========================================
-echo Starting Devsy Web Server (Production)
+echo Starting Newnlii Web Server (Production)
 echo ========================================
 
 REM
