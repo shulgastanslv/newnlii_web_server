@@ -31,4 +31,4 @@ echo Main API: http://localhost:8000
 echo ========================================
 echo.
 echo Press any key to exit (servers will continue running)...
-pause >nul
+pause > nul
