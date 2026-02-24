@@ -25,9 +25,13 @@ def create_user (user : UserCreate, db : Session):
         raise HTTPException(status_code=400, detail=f"User error while creating: {str(e)}")
     
 def get_user_by_email(db: Session, email: str):
-    print("get by email")
     user = db.query(User).filter(User.email == email).first()
-    print(email)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+def get_user_by_id (db: Session, id : int):
+    user = db.query(User).filter(User.id == id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
