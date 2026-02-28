@@ -6,13 +6,13 @@ class UserBase(BaseModel):
     username : str
     password : str
     email : str
-    bio: Optional[str]
-    avatar : Optional[str]
-    location : Optional[str]
-    push_notifications : bool
-    likes_notifications : bool
-    comments_notifications : bool
-    closed : bool
+    bio: Optional[str] = None
+    avatar : Optional[str] = None
+    location : Optional[str] = None
+    push_notifications : bool = False
+    likes_notifications : bool = False
+    comments_notifications : bool = False
+    closed : bool = False
 
 class UserCreate(UserBase):
     pass

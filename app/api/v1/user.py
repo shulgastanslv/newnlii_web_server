@@ -10,11 +10,10 @@ router = APIRouter()
 
 @router.get("/", response_model=List[UserOut])
 def get_all_users_route(db: Session = Depends(get_db)):
-    print("fff")
     return crud_user.get_users(db)
 
 @router.get("/{user_id}", response_model=UserOut)
-def get_user_by_id(
+def get_user_by_id_route(
     user_id: int = Path(..., description="ID пользователя", ge=1), 
     db: Session = Depends(get_db)
 ):
@@ -26,4 +25,6 @@ def get_user_by_email_route(email: str, db: Session = Depends(get_db)):
 
 @router.post("/", response_model=UserOut)
 def create_user_route(user : UserCreate, db: Session = Depends(get_db)):
+    print(user.email)
+    print(user.username)
     return crud_user.create_user(user, db)

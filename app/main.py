@@ -7,7 +7,6 @@ import os
 
 cors_origins = [
     "http://localhost:3000",
-    # "https://devsy-five.vercel.app",
     "https://*.vercel.app",
 ]
 
