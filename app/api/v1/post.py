@@ -83,3 +83,25 @@ def check_post_saved_route(
         "is_saved": is_saved
     }
 
+@router.get("/saved_count/{post_id}", status_code=200)
+def get_saved_count_route(
+    post_id: int = Path(..., description="ID поста для удаления из сохраненных", ge=1),
+    db: Session = Depends(get_db)
+):
+    return crud_post.get_saved_count(post_id, db)
+
+
+@router.post("/{post_id}/view", response_model=PostOut)
+def add_view_route(
+    post_id: int = Path(..., description="ID поста", ge=1),
+    db: Session = Depends(get_db)
+):
+    """
+    Увеличивает количество просмотров поста на 1.
+    Возвращает обновлённый объект поста.
+    """
+    post = crud_post.get_post_by_id(db, post_id)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    updated_post = crud_post.increment_post_views(db, post_id)
+    return updated_post

@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import List
+from typing import Any, Dict, List
 from fastapi import HTTPException
 from sqlalchemy import func
 from sqlalchemy.exc import DataError, IntegrityError
@@ -127,6 +127,20 @@ def is_post_saved_by_user(id: int, user_id: int, db: Session) -> bool:
             detail="An error occurred while checking saved status"
         )
 
+def get_saved_count(post_id : int, db : Session) -> int:
+    try:
+        post_count = db.query(SavedPost).filter(
+            SavedPost.post_id == post_id,
+        ).count()
+        
+        return {"post_id" : post_id, "count" : post_count}
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred while checking saved posts"
+        )
+
 def create_post(post_data: PostCreate, db: Session):
     try:
         db_post = Post(
@@ -198,3 +212,46 @@ def get_post_by_id(db: Session, id: int) -> Post:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching post: {str(e)}")
+    
+
+def get_popular_tags(db: Session, limit: int = 10) -> List[Dict[str, Any]]:
+    
+    try:
+        popular_tags = db.query(
+            Tag.id,
+            Tag.name,
+            Tag.slug,
+            func.count(post_tags.c.post_id).label('usage_count')
+        ).join(
+            post_tags, Tag.id == post_tags.c.tag_id
+        ).group_by(
+            Tag.id, Tag.name, Tag.slug
+        ).order_by(
+            func.count(post_tags.c.post_id).desc()
+        ).limit(limit).all()
+        
+        result = [
+            {
+                'id': tag.id,
+                'name': tag.name,
+                'slug': tag.slug,
+                'usage_count': tag.usage_count
+            }
+            for tag in popular_tags
+        ]
+        
+        return result
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error fetching popular tags: {str(e)}"
+        )
+
+def increment_post_views(db: Session, post_id: int):
+    post = db.query(Post).filter(Post.id == post_id).first()
+    if post:
+        post.views += 1
+        db.commit()
+        db.refresh(post)
+    return post

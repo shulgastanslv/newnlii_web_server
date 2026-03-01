@@ -13,6 +13,7 @@ class UserBase(BaseModel):
     likes_notifications : bool = False
     comments_notifications : bool = False
     closed : bool = False
+    verify : bool = False
 
 class UserCreate(UserBase):
     pass
@@ -31,6 +32,7 @@ class UserUpdate(BaseModel):
     likes_notifications : bool = False
     comments_notifications : bool = False
     closed : bool = False
+    verify : bool = False
 
 
 
