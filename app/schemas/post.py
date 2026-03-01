@@ -4,7 +4,6 @@ from pydantic import BaseModel
 from app.schemas.user import UserOut
 
 class TagResponse(BaseModel):
-    id: int
     name: str
     slug: str
     

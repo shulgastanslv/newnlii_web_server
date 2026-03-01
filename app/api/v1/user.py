@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
 from app.api.deps import get_db
 from app.crud import user as crud_user
-from app.schemas.user import UserCreate, UserOut
+from app.schemas.user import UserCreate, UserOut, UserUpdate
 from typing import List
 
 router = APIRouter()
@@ -28,3 +28,9 @@ def create_user_route(user : UserCreate, db: Session = Depends(get_db)):
     print(user.email)
     print(user.username)
     return crud_user.create_user(user, db)
+
+
+@router.patch("/update", response_model=UserOut)
+def update_user_route(user : UserUpdate, db: Session = Depends(get_db)):
+    print(user.username)
+    return crud_user.update_user(db, user)

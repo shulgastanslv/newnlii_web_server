@@ -2,11 +2,21 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import DataError, IntegrityError
 from fastapi import HTTPException
 from app.models.user import User
-from app.schemas.user import UserCreate
+from app.schemas.user import UserCreate, UserUpdate
 
 def get_users (db: Session):
     users = db.query(User).all()
     return users
+
+def update_user(db: Session, user_update: UserUpdate): 
+    db_user = db.query(User).filter(User.id == user_update.id).first() 
+    if db_user:
+        update_data = user_update.dict(exclude_unset=True)
+        for field, value in update_data.items():
+            setattr(db_user, field, value)
+        db.commit()
+        db.refresh(db_user)
+    return db_user
 
 def create_user (user : UserCreate, db : Session):
     try:
