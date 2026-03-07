@@ -8,7 +8,6 @@ from typing import Any, Dict, List, Optional
 
 router = APIRouter()
 
-
 @router.get("/popular", response_model=List[Dict[str, Any]])
 def check_post_saved_route(
     db: Session = Depends(get_db)

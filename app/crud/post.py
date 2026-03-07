@@ -8,18 +8,20 @@ from app.models.post import Post, SavedPost, Tag, post_tags
 from app.schemas.post import PostCreate
 
 
-def get_posts(db: Session):
-    try:
-        posts = db.query(Post).options(
-            joinedload(Post.tags)
-        ).order_by(Post.published.desc()).all()
-        
-        return posts
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, 
-            detail=f"Error fetching posts: {str(e)}"
-        )
+def get_posts(db: Session, cursor: int | None = None, limit: int = 5):
+    query = db.query(Post).options(joinedload(Post.tags))
+
+    if cursor:
+        query = query.filter(Post.id < cursor)
+
+    posts = (
+        query
+        .order_by(Post.id.desc())
+        .limit(limit + 1)
+        .all()
+    )
+
+    return posts
 
 def save_post(id: int, user_id: int, db: Session):
     try:
@@ -158,15 +160,12 @@ def create_post(post_data: PostCreate, db: Session):
 
         if post_data.tags:
             for tag_obj in post_data.tags:
-                # Получаем имя тега из объекта
                 tag_name = tag_obj.name if hasattr(tag_obj, 'name') else str(tag_obj)
                 
                 if tag_name:
-                    # Ищем существующий тег
                     existing_tag = db.query(Tag).filter(Tag.name == tag_name).first()
                     
                     if not existing_tag:
-                        # Создаем новый тег, если не найден
                         new_tag = Tag(
                             name=tag_name, 
                             slug=tag_name.lower().replace(' ', '-')
@@ -176,8 +175,6 @@ def create_post(post_data: PostCreate, db: Session):
                         tag_id = new_tag.id
                     else:
                         tag_id = existing_tag.id
-                    
-                    # Связываем пост с тегом
                     db.execute(
                         post_tags.insert().values(
                             post_id=db_post.id,

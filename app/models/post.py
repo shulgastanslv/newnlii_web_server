@@ -28,15 +28,29 @@ class Tag(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     posts = relationship("Post", secondary=post_tags, back_populates="tags")
     
+
+
+class PostStatus(str, enum.Enum):
+    SENT = "sent",
+    REJECTED = "rejected"
+    ACCEPTED = "accepted"
+    UNSENT = "unsent"
+
+
+
 class Post(Base):
     __tablename__ = "posts"
 
     id = Column(Integer, primary_key=True, index=True)
     text = Column(Text, nullable=False)
     published = Column(Boolean, default=False, nullable=False)
+    status = Column(Enum(PostStatus), default=PostStatus.SENT, nullable=False)
     category = Column(String(50), nullable=True, server_default="general")
     author_id = Column(Integer, ForeignKey("users.id", ondelete='CASCADE'), nullable=False)
     views = Column(Integer, default=0, nullable=False)
+    benefit = Column(Text, nullable=True)
+    aiOrigin = Column(Text, nullable=True)
+    linkUrl = Column(Text, nullable=True)
     saved_count = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False) 
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)

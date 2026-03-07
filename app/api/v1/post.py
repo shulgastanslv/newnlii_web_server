@@ -11,11 +11,12 @@ router = APIRouter()
 
 @router.get("/", response_model=List[PostOut])
 def get_all_posts_route(
+    cursor: int | None = None,
+    limit: int = Query(5, ge=1, le=50),
     db: Session = Depends(get_db)
 ):
-    posts = crud_post.get_posts(db)
+    posts = crud_post.get_posts(db, cursor=cursor, limit=limit)
     return posts
-
 
 @router.get("/{post_id}", response_model=PostOut)
 def get_post_by_id_route(
@@ -90,16 +91,11 @@ def get_saved_count_route(
 ):
     return crud_post.get_saved_count(post_id, db)
 
-
 @router.post("/{post_id}/view", response_model=PostOut)
 def add_view_route(
     post_id: int = Path(..., description="ID поста", ge=1),
     db: Session = Depends(get_db)
 ):
-    """
-    Увеличивает количество просмотров поста на 1.
-    Возвращает обновлённый объект поста.
-    """
     post = crud_post.get_post_by_id(db, post_id)
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")

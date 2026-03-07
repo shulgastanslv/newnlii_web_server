@@ -6,7 +6,6 @@ from app.models.post import NotificationType, NotificationStatus
 from app.schemas.post import PostBase
 from app.schemas.user import UserOut
 
-
 class NotificationBase(BaseModel):
     user_id: int
     actor_id: Optional[int] = None
