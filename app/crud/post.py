@@ -97,18 +97,27 @@ def delete_saved_post(id: int, user_id: int, db: Session):
             detail="An error occurred while unsaving the post"
         )
     
-def get_user_saved_posts(user_id: int, db: Session, skip: int = 0, limit: int = 100):
+    
+def get_user_saved_posts(
+    user_id: int,
+    db: Session,
+    skip: int = 0,
+    limit: int = 100
+):
     try:
-        saved_posts = db.query(SavedPost)\
-            .filter(SavedPost.user_id == user_id)\
-            .order_by(SavedPost.saved_at.desc())\
-            .offset(skip)\
-            .limit(limit)\
+        posts = (
+            db.query(Post)
+            .join(SavedPost, SavedPost.post_id == Post.id)
+            .filter(SavedPost.user_id == user_id)
+            .order_by(SavedPost.saved_at.desc())
+            .offset(skip)
+            .limit(limit)
             .all()
-        
-        return saved_posts
-        
-    except Exception as e:
+        )
+
+        return posts
+
+    except Exception:
         raise HTTPException(
             status_code=500,
             detail="An error occurred while fetching saved posts"
@@ -152,7 +161,11 @@ def create_post(post_data: PostCreate, db: Session):
             images=post_data.images or [],
             is_reply = post_data.is_reply,
             category=post_data.category,
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
+            status = post_data.status,
+            benefit = post_data.benefit,
+            aiOrigin = post_data.aiOrigin,
+            linkUrl = post_data.linkUrl
         )
         
         db.add(db_post)
@@ -200,6 +213,7 @@ def create_post(post_data: PostCreate, db: Session):
         raise HTTPException(status_code=500, detail=f"Error creating post: {str(e)}")
     
 def get_post_by_id(db: Session, id: int) -> Post:
+
     try:
         post = db.query(Post).filter(Post.id == id).first()
         if not post:

@@ -62,7 +62,8 @@ class Post(Base):
     saved_by = relationship("SavedPost", back_populates="post", cascade="all, delete-orphan")
     notifications = relationship("Notification", back_populates="post", cascade="all, delete-orphan")
     tags = relationship("Tag", secondary=post_tags, back_populates="posts")
-   
+    comments = relationship("Comment", back_populates="post", cascade="all, delete-orphan")
+
 
 class SavedPost(Base):
     __tablename__ = "saved_posts"
@@ -107,4 +108,17 @@ class Notification(Base):
     actor = relationship("User", foreign_keys=[actor_id], backref="acted_notifications")
     post = relationship("Post", back_populates="notifications")
    
+class Comment(Base):
+    __tablename__ = "comments"
 
+    id = Column(Integer, primary_key=True, index=True)
+    post_id = Column(Integer, ForeignKey("posts.id", ondelete="CASCADE"), nullable=False)
+    author_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    text = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    is_deleted = Column(Boolean, default=False, nullable=False)
+    deleted_at = Column(DateTime, nullable=True)
+
+    post = relationship("Post", back_populates="comments")
+    author = relationship("User", back_populates="comments")

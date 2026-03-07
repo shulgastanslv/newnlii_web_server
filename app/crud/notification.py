@@ -11,7 +11,6 @@ from app.schemas.notification import NotificationCreate, NotificationUpdate
 
 
 def create_notification(db: Session, notification_in: NotificationCreate) -> Notification:
-    """Создать новое уведомление (обычно вызывается из других сервисов)."""
     try:
         db_notification = Notification(
             user_id=notification_in.user_id,
@@ -40,7 +39,6 @@ def get_user_notifications(
     limit: int = 100,
     include_status: Optional[List[NotificationStatus]] = None
 ) -> List[Notification]:
-    """Получить уведомления пользователя с возможностью фильтрации по статусу."""
     try:
         query = db.query(Notification).options(
             joinedload(Notification.actor),
@@ -58,7 +56,6 @@ def get_user_notifications(
 
 
 def get_notification_by_id(db: Session, notification_id: int) -> Notification:
-    """Получить одно уведомление по ID (с проверкой существования)."""
     notification = db.get(Notification, notification_id)
     if not notification:
         raise HTTPException(status_code=404, detail="Notification not found")
@@ -66,7 +63,6 @@ def get_notification_by_id(db: Session, notification_id: int) -> Notification:
 
 
 def mark_notification_as_read(db: Session, notification_id: int, user_id: int) -> Notification:
-    """Отметить уведомление как прочитанное (только для владельца)."""
     try:
         notification = db.query(Notification).filter(
             Notification.id == notification_id,
@@ -89,7 +85,6 @@ def mark_notification_as_read(db: Session, notification_id: int, user_id: int) -
 
 
 def mark_all_notifications_as_read(db: Session, user_id: int) -> int:
-    """Отметить все непрочитанные уведомления пользователя как прочитанные. Возвращает количество обновлённых."""
     try:
         result = db.query(Notification).filter(
             Notification.user_id == user_id,
@@ -106,7 +101,6 @@ def mark_all_notifications_as_read(db: Session, user_id: int) -> int:
 
 
 def archive_notification(db: Session, notification_id: int, user_id: int) -> Notification:
-    """Переместить уведомление в архив."""
     try:
         notification = db.query(Notification).filter(
             Notification.id == notification_id,
@@ -127,7 +121,6 @@ def archive_notification(db: Session, notification_id: int, user_id: int) -> Not
 
 
 def delete_notification(db: Session, notification_id: int, user_id: int) -> None:
-    """Удалить уведомление (полное удаление из БД)."""
     try:
         notification = db.query(Notification).filter(
             Notification.id == notification_id,
@@ -146,7 +139,6 @@ def delete_notification(db: Session, notification_id: int, user_id: int) -> None
 
 
 def get_unread_count(db: Session, user_id: int) -> int:
-    """Получить количество непрочитанных уведомлений пользователя."""
     try:
         count = db.query(Notification).filter(
             Notification.user_id == user_id,

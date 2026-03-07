@@ -20,6 +20,10 @@ class PostBase(BaseModel):
     images : List[str] = None
     tags: List[TagResponse] = []
     category : str
+    status : str
+    benefit: Optional[str] = None
+    aiOrigin: Optional[str] = None
+    linkUrl: Optional[str] = None
 
 class PostCreate(PostBase):
     pass
