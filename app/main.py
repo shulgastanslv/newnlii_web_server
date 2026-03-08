@@ -7,9 +7,8 @@ import os
 
 cors_origins = [
     "http://localhost:3000",
-    "http://www.api-devsy.site",
-    "https://www.api-devsy.site"
-    "www.api-devsy.site",
+    "http://127.0.0.1:3000",
+    "https://newnlii.vercel.app",
     "https://*.vercel.app",
 ]
 
