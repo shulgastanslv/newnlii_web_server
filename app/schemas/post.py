@@ -36,3 +36,11 @@ class PostOut(PostBase):
 class SavedPostOut(PostBase):
   created_at: datetime
   author : UserOut
+
+from enum import Enum
+
+class FeedFilter(str, Enum):
+    foryou = "foryou"
+    following = "following"
+    popular = "popular"
+    new = "new"

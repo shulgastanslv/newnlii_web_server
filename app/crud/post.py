@@ -4,22 +4,39 @@ from fastapi import HTTPException
 from sqlalchemy import func
 from sqlalchemy.exc import DataError, IntegrityError
 from sqlalchemy.orm import Session, joinedload
-from app.models.post import Post, SavedPost, Tag, post_tags
-from app.schemas.post import PostCreate
+from app.models.post import Comment, Post, SavedPost, Tag, post_tags
+from app.models.user import Follow, User
+from app.schemas.post import FeedFilter, PostCreate
 
 
-def get_posts(db: Session, cursor: int | None = None, limit: int = 5):
+def get_posts(db: Session, cursor: int | None = None, limit: int = 5, filter: FeedFilter = FeedFilter.new, userId : int | None = None, category : str | None = None):
     query = db.query(Post).options(joinedload(Post.tags))
 
     if cursor:
         query = query.filter(Post.id < cursor)
-
-    posts = (
-        query
-        .order_by(Post.id.desc())
-        .limit(limit + 1)
-        .all()
+    if category:
+        query = query.filter(Post.category == category)
+    if filter == FeedFilter.new:
+        query = query.order_by(Post.id.desc())
+    elif filter == FeedFilter.popular:
+       query = (
+        db.query(Post)
+        .outerjoin(Comment)
+        .group_by(Post.id)
+        .order_by(func.count(Comment.id).desc())
     )
+    elif filter == FeedFilter.following and userId != None:
+        query = (
+            query
+            .join(Follow, Follow.following_id == Post.author_id)
+            .filter(Follow.follower_id == userId)
+        )
+    elif filter == FeedFilter.foryou:
+        query = query.order_by(Post.views.desc(), Post.id.desc())
+    
+    print(filter)
+    posts = query.limit(limit + 1).all()
+
 
     return posts
 
@@ -97,7 +114,7 @@ def delete_saved_post(id: int, user_id: int, db: Session):
             detail="An error occurred while unsaving the post"
         )
     
-    
+
 def get_user_saved_posts(
     user_id: int,
     db: Session,

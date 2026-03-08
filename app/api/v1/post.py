@@ -5,17 +5,22 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db
 from app.crud import post as crud_post
 from typing import List, Optional
-from app.schemas.post import PostCreate, PostOut, SavedPostOut
+from app.schemas.post import FeedFilter, PostCreate, PostOut, SavedPostOut
 
 router = APIRouter()
+
+
 
 @router.get("/", response_model=List[PostOut])
 def get_all_posts_route(
     cursor: int | None = None,
     limit: int = Query(5, ge=1, le=50),
+    filter: FeedFilter = FeedFilter.new,
+    userId : int | None = None,
+    category: str | None = None,
     db: Session = Depends(get_db)
 ):
-    posts = crud_post.get_posts(db, cursor=cursor, limit=limit)
+    posts = crud_post.get_posts(db, cursor=cursor, limit=limit, filter=filter, userId=userId, category=category)
     return posts
 
 @router.get("/{post_id}", response_model=PostOut)
