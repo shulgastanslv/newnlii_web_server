@@ -29,13 +29,6 @@ class PostBase(BaseModel):
 class PostCreate(PostBase):
     pass
 
-class PostOut(PostBase):
-  created_at: datetime
-  author : UserOut
-  saved_by: List[SavedPostOut] = []      # ✅ now a list, defaults to empty
-  comments: List[CommentsOut] = [] 
-
-
 class SavedPostOut(BaseModel):
   id : int
   user_id : int
@@ -44,6 +37,13 @@ class SavedPostOut(BaseModel):
   saved_at : datetime
   class Config:
         from_attributes = True 
+
+class PostOut(PostBase):
+  created_at: datetime
+  author : UserOut
+  saved_by: List[SavedPostOut] = []
+  comments: List[CommentsOut] = [] 
+
 
 from enum import Enum
 
