@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel
+from app.schemas.comments import CommentsOut
 from app.schemas.user import UserOut
 
 class TagResponse(BaseModel):
@@ -31,11 +32,18 @@ class PostCreate(PostBase):
 class PostOut(PostBase):
   created_at: datetime
   author : UserOut
+  saved_by: List[SavedPostOut] = []      # ✅ now a list, defaults to empty
+  comments: List[CommentsOut] = [] 
 
 
-class SavedPostOut(PostBase):
-  created_at: datetime
-  author : UserOut
+class SavedPostOut(BaseModel):
+  id : int
+  user_id : int
+  post_id  : int
+  user : UserOut
+  saved_at : datetime
+  class Config:
+        from_attributes = True 
 
 from enum import Enum
 

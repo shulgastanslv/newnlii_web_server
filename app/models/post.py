@@ -122,7 +122,6 @@ class Comment(Base):
 
     post = relationship("Post", back_populates="comments")
     author = relationship("User", back_populates="comments")
-    
 
 
 class Vote(Base):
@@ -131,12 +130,8 @@ class Vote(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     post_id = Column(Integer, ForeignKey("posts.id", ondelete="CASCADE"), nullable=False)
-
-    # +1 = upvote, -1 = downvote (если нужно)
     value = Column(Integer, nullable=False, default=1)
-
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-
     __table_args__ = (
         UniqueConstraint("user_id", "post_id", name="uq_vote_user_post"),
         Index("ix_votes_post_id", "post_id"),

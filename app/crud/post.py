@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List
 from fastapi import HTTPException
 from sqlalchemy import func
@@ -115,6 +115,7 @@ def delete_saved_post(id: int, user_id: int, db: Session):
         )
     
 
+
 def get_user_saved_posts(
     user_id: int,
     db: Session,
@@ -171,6 +172,8 @@ def get_saved_count(post_id : int, db : Session) -> int:
 
 def create_post(post_data: PostCreate, db: Session):
     try:
+        moscow_time = datetime.utcnow() + timedelta(hours=3)
+
         db_post = Post(
             text=post_data.text,
             published=post_data.published,
@@ -178,7 +181,7 @@ def create_post(post_data: PostCreate, db: Session):
             images=post_data.images or [],
             is_reply = post_data.is_reply,
             category=post_data.category,
-            created_at=datetime.utcnow(),
+            created_at=moscow_time,
             status = post_data.status,
             benefit = post_data.benefit,
             aiOrigin = post_data.aiOrigin,
@@ -283,3 +286,33 @@ def increment_post_views(db: Session, post_id: int):
         db.commit()
         db.refresh(post)
     return post
+
+
+def delete_post(post_id: int, user_id: int, db: Session):
+    try:
+        post = db.query(Post).filter(
+            Post.id == post_id,
+            Post.author_id == user_id
+        ).first()
+        
+        if not post:
+            raise HTTPException(
+                status_code=404,
+                detail="Post post not found"
+            )
+        
+        db.delete(post)
+        db.commit()
+        
+        return True
+        
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred while unsaving the post"
+        )
+    

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 from fastapi import HTTPException
@@ -11,11 +11,13 @@ from app.schemas.comments import CommentsCreate
 
 def create_comment(db: Session, comment_in: CommentsCreate) -> Comment:
     try:
+
+        moscow_time = datetime.utcnow() + timedelta(hours=3)
         db_comment = Comment(
             post_id=comment_in.post_id,
             author_id=comment_in.author_id,
             text=comment_in.text,
-            created_at=datetime.utcnow()
+            created_at=moscow_time
         )
 
         db.add(db_comment)

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import List
 
 from fastapi import HTTPException
@@ -13,6 +13,9 @@ def follow_user(
     following_id: int
 ) -> Follow:
     try:
+
+        moscow_time = datetime.utcnow() + timedelta(hours=3)
+
         if follower_id == following_id:
             raise HTTPException(
                 status_code=400,
@@ -30,7 +33,7 @@ def follow_user(
         follow = Follow(
             follower_id=follower_id,
             following_id=following_id,
-            created_at=datetime.utcnow()
+            created_at=moscow_time
         )
 
         db.add(follow)

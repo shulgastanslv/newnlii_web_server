@@ -30,6 +30,14 @@ def get_post_by_id_route(
 ):
     return crud_post.get_post_by_id(db, post_id)
 
+@router.delete("/{post_id}", response_model=bool)
+def delete_post_route(
+    post_id: int = Path(..., description="ID поста", ge=1), 
+    user_id: int = Query(..., description="ID пользователя"),
+    db: Session = Depends(get_db)
+):
+    return crud_post.delete_post(db=db, post_id=post_id, user_id=user_id)
+
 @router.post("/", response_model=PostOut, status_code=201)
 def create_post_route(
     post: PostCreate, 

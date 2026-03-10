@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -10,6 +10,9 @@ from app.schemas.votes import VoteCreate
 def create_vote(db: Session, vote_in : VoteCreate):
 
     try:
+
+        moscow_time = datetime.utcnow() + timedelta(hours=3)
+
         vote = db.query(Vote).filter(
             Vote.user_id == vote_in.user_id,
             Vote.post_id == vote_in.post_id
@@ -25,7 +28,7 @@ def create_vote(db: Session, vote_in : VoteCreate):
             user_id=vote_in.user_id,
             post_id=vote_in.post_id,
             value=vote_in.value,
-            created_at=datetime.utcnow()
+            created_at=moscow_time
         )
 
         db.add(db_vote)

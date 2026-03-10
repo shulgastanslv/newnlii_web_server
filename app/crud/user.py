@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import DataError, IntegrityError
 from fastapi import HTTPException
@@ -20,10 +22,13 @@ def update_user(db: Session, user_update: UserUpdate):
 
 def create_user (user : UserCreate, db : Session):
     try:
+        moscow_time = datetime.utcnow() + timedelta(hours=3)
+
         db_user = User(
           username = user.username,
           password = user.password,
           email = user.email,
+          created_at = moscow_time
         )
         print(str(db_user))
         db.add(db_user)

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 from fastapi import HTTPException
@@ -12,6 +12,9 @@ from app.schemas.notification import NotificationCreate, NotificationUpdate
 
 def create_notification(db: Session, notification_in: NotificationCreate) -> Notification:
     try:
+
+        moscow_time = datetime.utcnow() + timedelta(hours=3)
+
         db_notification = Notification(
             user_id=notification_in.user_id,
             actor_id=notification_in.actor_id,
@@ -21,7 +24,7 @@ def create_notification(db: Session, notification_in: NotificationCreate) -> Not
             title=notification_in.title,
             content=notification_in.content,
             expires_at=notification_in.expires_at,
-            created_at=datetime.utcnow()
+            created_at=moscow_time
         )
         db.add(db_notification)
         db.commit()

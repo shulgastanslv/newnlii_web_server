@@ -32,7 +32,7 @@ class NotificationOut(NotificationBase):
     read_at: Optional[datetime] = None
     actor: Optional[UserOut] = None
     post: Optional[PostBase] = None
-
+    user : UserOut = None
     class Config:
         from_attributes = True
 
