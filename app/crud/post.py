@@ -1,43 +1,68 @@
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from fastapi import HTTPException
-from sqlalchemy import func
+from sqlalchemy import case, func
 from sqlalchemy.exc import DataError, IntegrityError
 from sqlalchemy.orm import Session, joinedload
-from app.models.post import Comment, Post, SavedPost, Tag, post_tags
+from app.models.post import Comment, Post, SavedPost, Tag, Vote, post_tags
 from app.models.user import Follow, User
 from app.schemas.post import FeedFilter, PostCreate
 
-
-def get_posts(db: Session, cursor: int | None = None, limit: int = 5, filter: FeedFilter = FeedFilter.new, userId : int | None = None, category : str | None = None):
+def get_posts(
+    db: Session, 
+    cursor: Optional[int] = None, 
+    limit: int = 15, 
+    filter: FeedFilter = FeedFilter.new,
+    user_id: Optional[int] = None, 
+    category: Optional[str] = None
+):
     query = db.query(Post).options(joinedload(Post.tags))
-
-    if cursor:
-        query = query.filter(Post.id < cursor)
+    
     if category:
         query = query.filter(Post.category == category)
-    if filter == FeedFilter.new:
-        query = query.order_by(Post.id.desc())
-    elif filter == FeedFilter.popular:
-       query = (
-        db.query(Post)
-        .outerjoin(Comment)
-        .group_by(Post.id)
-        .order_by(func.count(Comment.id).desc())
-    )
-    elif filter == FeedFilter.following and userId != None:
-        query = (
-            query
-            .join(Follow, Follow.following_id == Post.author_id)
-            .filter(Follow.follower_id == userId)
-        )
-    elif filter == FeedFilter.foryou:
-        query = query.order_by(Post.views.desc(), Post.id.desc())
     
-    print(filter)
+    if filter == FeedFilter.following:
+        if user_id is None:
+            raise ValueError("User_id required for following feed")
+        query = query.join(
+            Follow, 
+            Follow.following_id == Post.author_id
+        ).filter(Follow.follower_id == user_id)
+    
+    if filter == FeedFilter.popular:
+        # Для popular считаем количество комментариев
+        query = query.outerjoin(Comment).group_by(Post.id)
+        query = query.order_by(func.count(Comment.id).desc(), Post.id.desc())
+        if cursor:
+            # Для popular нужна специальная логика пагинации
+            subquery = db.query(Post.id).outerjoin(Comment).group_by(Post.id).having(
+                func.count(Comment.id) < cursor
+            ).subquery()
+            query = query.filter(Post.id.in_(subquery))
+    
+    elif filter == FeedFilter.foryou:
+        likes = func.sum(case((Vote.value == 1, 1), else_=0)).label('likes')
+        dislikes = func.sum(case((Vote.value == -1, 1), else_=0)).label('dislikes')
+        rating = (likes - dislikes).label('rating')
+        
+        query = query.outerjoin(Vote, Vote.post_id == Post.id)\
+                    .group_by(Post.id)\
+                    .order_by(rating.desc(), Post.id.desc())
+        
+        if cursor:
+            query = query.having(
+                (rating < cursor) | 
+                ((rating == cursor) & (Post.id < cursor))
+            )
+    
+    else:
+        order_by = [Post.created_at.desc()]
+        if cursor:
+            query = query.filter(Post.id < cursor)
+        query = query.order_by(*order_by)
+    
     posts = query.limit(limit + 1).all()
-
-
+    
     return posts
 
 def save_post(id: int, user_id: int, db: Session):

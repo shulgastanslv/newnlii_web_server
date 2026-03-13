@@ -1,6 +1,8 @@
 from http.client import HTTPException
 import random
 from fastapi import APIRouter, Depends, Path, Query
+import redis
+from app.redis import client
 from sqlalchemy.orm import Session
 from app.api.deps import get_db
 from app.crud import post as crud_post
@@ -8,8 +10,6 @@ from typing import List, Optional
 from app.schemas.post import FeedFilter, PostCreate, PostOut, SavedPostOut
 
 router = APIRouter()
-
-
 
 @router.get("/", response_model=List[PostOut])
 def get_all_posts_route(
@@ -20,7 +20,7 @@ def get_all_posts_route(
     category: str | None = None,
     db: Session = Depends(get_db)
 ):
-    posts = crud_post.get_posts(db, cursor=cursor, limit=limit, filter=filter, userId=userId, category=category)
+    posts = crud_post.get_posts(db, cursor=cursor, limit=limit, filter=filter, user_id=userId, category=category)
     return posts
 
 @router.get("/{post_id}", response_model=PostOut)
