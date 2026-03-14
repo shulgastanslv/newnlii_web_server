@@ -30,7 +30,6 @@ def create_user (user : UserCreate, db : Session):
           email = user.email,
           created_at = moscow_time
         )
-        print(str(db_user))
         db.add(db_user)
         db.commit()
         db.refresh(db_user)

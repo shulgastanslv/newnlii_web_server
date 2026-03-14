@@ -20,7 +20,6 @@ def get_my_notifications(
     status: Optional[List[NotificationStatus]] = Query(None, description="Фильтр по статусам"),
     db: Session = Depends(get_db)
 ):
-    """Получить список уведомлений текущего пользователя (по user_id)."""
     return crud_notification.get_user_notifications(db, user_id, skip, limit, status)
 
 
@@ -29,7 +28,6 @@ def get_unread_notifications_count(
     user_id: int = Query(..., description="ID пользователя"),
     db: Session = Depends(get_db)
 ):
-    """Количество непрочитанных уведомлений."""
     count = crud_notification.get_unread_count(db, user_id)
     return {"user_id": user_id, "unread_count": count}
 
@@ -40,7 +38,6 @@ def mark_notification_read(
     user_id: int = Query(..., description="ID пользователя (владельца)"),
     db: Session = Depends(get_db)
 ):
-    """Отметить одно уведомление как прочитанное."""
     return crud_notification.mark_notification_as_read(db, notification_id, user_id)
 
 
@@ -49,7 +46,6 @@ def mark_all_notifications_read(
     user_id: int = Query(..., description="ID пользователя"),
     db: Session = Depends(get_db)
 ):
-    """Отметить все непрочитанные уведомления пользователя как прочитанные."""
     updated = crud_notification.mark_all_notifications_as_read(db, user_id)
     return {"message": f"Marked {updated} notifications as read"}
 
@@ -60,7 +56,6 @@ def archive_notification(
     user_id: int = Query(..., description="ID пользователя"),
     db: Session = Depends(get_db)
 ):
-    """Переместить уведомление в архив."""
     return crud_notification.archive_notification(db, notification_id, user_id)
 
 
@@ -70,9 +65,8 @@ def delete_notification(
     user_id: int = Query(..., description="ID пользователя"),
     db: Session = Depends(get_db)
 ):
-    """Полностью удалить уведомление."""
     crud_notification.delete_notification(db, notification_id, user_id)
-    return None  # 204 No Content
+    return None
 
 
 @router.post("/", response_model=NotificationOut, status_code=status.HTTP_201_CREATED)
@@ -80,5 +74,4 @@ def create_notification_endpoint(
     notification_in: NotificationCreate,
     db: Session = Depends(get_db)
 ):
-    """Создать новое уведомление (обычно вызывается не напрямую)."""
     return crud_notification.create_notification(db, notification_in)

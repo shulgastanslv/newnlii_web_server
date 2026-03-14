@@ -9,8 +9,6 @@ from app.schemas.votes import VoteCreate
 
 def create_vote(db: Session, vote_in : VoteCreate):
 
-    try:
-
         moscow_time = datetime.utcnow() + timedelta(hours=3)
 
         vote = db.query(Vote).filter(
@@ -37,24 +35,17 @@ def create_vote(db: Session, vote_in : VoteCreate):
 
         return db_vote
 
-    except SQLAlchemyError as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 def get_votes_by_post(db: Session, post_id: int):
 
-    try:
         return db.query(Vote).filter(
             Vote.post_id == post_id
         ).all()
 
-    except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 def delete_vote(db: Session, post_id: int, user_id: int):
-
     try:
         vote = db.query(Vote).filter(
             Vote.post_id == post_id,

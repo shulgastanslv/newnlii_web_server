@@ -12,8 +12,6 @@ def follow_user(
     follower_id: int,
     following_id: int
 ) -> Follow:
-    try:
-
         moscow_time = datetime.utcnow() + timedelta(hours=3)
 
         if follower_id == following_id:
@@ -42,23 +40,12 @@ def follow_user(
 
         return follow
 
-    except HTTPException:
-        raise
-
-    except SQLAlchemyError as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Database error: {str(e)}"
-        )
-
 
 def unfollow_user(
     db: Session,
     follower_id: int,
     following_id: int
 ) -> None:
-    try:
         follow = db.query(Follow).filter(
             Follow.follower_id == follower_id,
             Follow.following_id == following_id
@@ -73,16 +60,6 @@ def unfollow_user(
         db.delete(follow)
         db.commit()
 
-    except HTTPException:
-        raise
-
-    except SQLAlchemyError as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Database error: {str(e)}"
-        )
-
 
 def get_followers(
     db: Session,
@@ -90,18 +67,11 @@ def get_followers(
     skip: int = 0,
     limit: int = 100
 ) -> List[Follow]:
-    try:
         return db.query(Follow).filter(
             Follow.following_id == user_id
         ).order_by(
             Follow.created_at.desc()
         ).offset(skip).limit(limit).all()
-
-    except SQLAlchemyError as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error fetching followers: {str(e)}"
-        )
 
 
 def get_following(
@@ -110,25 +80,16 @@ def get_following(
     skip: int = 0,
     limit: int = 100
 ) -> List[Follow]:
-    try:
         return db.query(Follow).filter(
             Follow.follower_id == user_id
         ).order_by(
             Follow.created_at.desc()
         ).offset(skip).limit(limit).all()
 
-    except SQLAlchemyError as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error fetching following: {str(e)}"
-        )
-
-
 def get_follow_count(
     db: Session,
     user_id: int
 ):
-    try:
         followers_count = db.query(Follow).filter(
             Follow.following_id == user_id
         ).count()
@@ -141,9 +102,3 @@ def get_follow_count(
             "followers_count": followers_count,
             "following_count": following_count
         }
-
-    except SQLAlchemyError as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error counting follows: {str(e)}"
-        )

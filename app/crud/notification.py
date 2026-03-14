@@ -11,8 +11,6 @@ from app.schemas.notification import NotificationCreate, NotificationUpdate
 
 
 def create_notification(db: Session, notification_in: NotificationCreate) -> Notification:
-    try:
-
         moscow_time = datetime.utcnow() + timedelta(hours=3)
 
         db_notification = Notification(
@@ -30,9 +28,6 @@ def create_notification(db: Session, notification_in: NotificationCreate) -> Not
         db.commit()
         db.refresh(db_notification)
         return db_notification
-    except SQLAlchemyError as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 
 def get_user_notifications(
@@ -42,7 +37,6 @@ def get_user_notifications(
     limit: int = 100,
     include_status: Optional[List[NotificationStatus]] = None
 ) -> List[Notification]:
-    try:
         query = db.query(Notification).options(
             joinedload(Notification.actor),
             joinedload(Notification.post)
@@ -54,8 +48,6 @@ def get_user_notifications(
         notifications = query.order_by(Notification.created_at.desc()) \
             .offset(skip).limit(limit).all()
         return notifications
-    except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching notifications: {str(e)}")
 
 
 def get_notification_by_id(db: Session, notification_id: int) -> Notification:
@@ -66,7 +58,6 @@ def get_notification_by_id(db: Session, notification_id: int) -> Notification:
 
 
 def mark_notification_as_read(db: Session, notification_id: int, user_id: int) -> Notification:
-    try:
         notification = db.query(Notification).filter(
             Notification.id == notification_id,
             Notification.user_id == user_id
@@ -80,15 +71,9 @@ def mark_notification_as_read(db: Session, notification_id: int, user_id: int) -
             db.commit()
             db.refresh(notification)
         return notification
-    except HTTPException:
-        raise
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error marking notification as read: {str(e)}")
 
 
 def mark_all_notifications_as_read(db: Session, user_id: int) -> int:
-    try:
         result = db.query(Notification).filter(
             Notification.user_id == user_id,
             Notification.status == NotificationStatus.UNREAD
@@ -98,13 +83,9 @@ def mark_all_notifications_as_read(db: Session, user_id: int) -> int:
         }, synchronize_session=False)
         db.commit()
         return result
-    except SQLAlchemyError as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error marking all as read: {str(e)}")
 
 
 def archive_notification(db: Session, notification_id: int, user_id: int) -> Notification:
-    try:
         notification = db.query(Notification).filter(
             Notification.id == notification_id,
             Notification.user_id == user_id
@@ -116,15 +97,9 @@ def archive_notification(db: Session, notification_id: int, user_id: int) -> Not
         db.commit()
         db.refresh(notification)
         return notification
-    except HTTPException:
-        raise
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error archiving notification: {str(e)}")
 
 
 def delete_notification(db: Session, notification_id: int, user_id: int) -> None:
-    try:
         notification = db.query(Notification).filter(
             Notification.id == notification_id,
             Notification.user_id == user_id
@@ -134,19 +109,11 @@ def delete_notification(db: Session, notification_id: int, user_id: int) -> None
 
         db.delete(notification)
         db.commit()
-    except HTTPException:
-        raise
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error deleting notification: {str(e)}")
 
 
 def get_unread_count(db: Session, user_id: int) -> int:
-    try:
         count = db.query(Notification).filter(
             Notification.user_id == user_id,
             Notification.status == NotificationStatus.UNREAD
         ).count()
         return count
-    except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail=f"Error counting unread notifications: {str(e)}")

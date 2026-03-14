@@ -18,6 +18,7 @@ class PostBase(BaseModel):
     author_id : int
     views : int = 0
     is_reply : bool = False
+    is_deleted : bool = False
     images : List[str] = None
     tags: List[TagResponse] = []
     category : str
@@ -25,6 +26,10 @@ class PostBase(BaseModel):
     benefit: Optional[str] = None
     aiOrigin: Optional[str] = None
     linkUrl: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    deleted_at: Optional[datetime] = None
+
 
 class PostCreate(PostBase):
     pass
@@ -39,11 +44,42 @@ class SavedPostOut(BaseModel):
         from_attributes = True 
 
 class PostOut(PostBase):
-  created_at: datetime
   author : UserOut
   saved_by: List[SavedPostOut] = []
   comments: List[CommentsOut] = [] 
 
+def serialize_post(post : PostOut):
+    post_dict = {
+        'id': post.id,
+        'text': post.text,
+        'published': post.published,
+        'status': post.status if post.status else None,
+        'category': post.category,
+        'author_id': post.author_id,
+        'benefit': post.benefit,
+        'views': post.views,
+        'aiOrigin': post.aiOrigin,
+        'linkUrl': post.linkUrl,
+        'created_at': post.created_at.isoformat() if post.created_at else None,
+        'updated_at': post.updated_at.isoformat() if post.updated_at else None,
+        'images': post.images,
+        'is_deleted': post.is_deleted,
+        'deleted_at': post.deleted_at.isoformat() if post.deleted_at else None,
+        'is_reply': post.is_reply,
+        'tags': [{'id': t.id, 'name': t.name, 'slug': t.slug} for t in post.tags]
+    }
+    
+    if hasattr(post, 'author') and post.author:
+        post_dict['author'] = {
+            'id': post.author.id,
+            'username': post.author.username,
+            'email': post.author.email,
+            'password' : post.author.password
+        }
+    else:
+        post_dict['author'] = None
+    
+    return post_dict
 
 from enum import Enum
 

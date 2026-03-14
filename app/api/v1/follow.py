@@ -59,7 +59,6 @@ def follow_status(
     return {"is_following": following_id in following_ids}
 
 
-
 @router.get("/count")
 def follow_status(
     user_id: int = Query(..., description="ID пользователя"),

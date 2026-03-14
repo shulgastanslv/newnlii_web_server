@@ -83,11 +83,9 @@ def delete_comment(
 
         db.commit()
 
-    except HTTPException:
-        raise
-    except Exception as e:
+    except SQLAlchemyError as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error deleting comment: {str(e)}")
+        raise Exception(status_code=500, detail=f"Error deleting comment: {str(e)}")
 
 
 def get_comment_count_by_post(db: Session, post_id: int) -> int:
@@ -98,4 +96,4 @@ def get_comment_count_by_post(db: Session, post_id: int) -> int:
         ).count()
 
     except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail=f"Error counting comments: {str(e)}")
+        raise Exception(status_code=500, detail=f"Error counting comments: {str(e)}")
