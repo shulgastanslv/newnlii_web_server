@@ -2,7 +2,6 @@ from http.client import HTTPException
 import random
 from fastapi import APIRouter, Depends, Path, Query
 import redis
-from app.redis import client
 from sqlalchemy.orm import Session
 from app.api.deps import get_db
 from app.crud import post as crud_post
@@ -15,13 +14,12 @@ router = APIRouter()
 def get_all_posts_route(
     cursor: int | None = None,
     limit: int = Query(5, ge=1, le=50),
-    filter: FeedFilter = FeedFilter.new,
     userId : int | None = None,
-    category: str | None = None,
     db: Session = Depends(get_db)
 ):
-    posts = crud_post.get_posts(db, cursor=cursor, limit=limit, filter=filter, user_id=userId, category=category)
-    return posts
+    result = crud_post.get_posts(db, cursor=cursor, limit=limit, user_id=userId)
+    # Возвращаем только посты, has_next можно передать в заголовках
+    return result['posts']
 
 @router.get("/{post_id}", response_model=PostOut)
 def get_post_by_id_route(

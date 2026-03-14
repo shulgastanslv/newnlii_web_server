@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+import json
 from typing import Any, Dict, List, Optional
 from fastapi import HTTPException
 from sqlalchemy import case, func
@@ -7,63 +8,122 @@ from sqlalchemy.orm import Session, joinedload
 from app.models.post import Comment, Post, SavedPost, Tag, Vote, post_tags
 from app.models.user import Follow, User
 from app.schemas.post import FeedFilter, PostCreate
+import redis
+import json
+from typing import Optional, List, Any
+from datetime import timedelta
+
+redis_client = redis.Redis(
+    host='localhost', 
+    port=6379, 
+    db=0, 
+    decode_responses=True,
+    password=None
+)
+
+class DateTimeEncoder(json.JSONEncoder):
+    """Кастомный encoder для обработки datetime и Enum"""
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        if hasattr(obj, 'value'):  # для Enum
+            return obj.value
+        return super().default(obj)
+
+def serialize_post(post):
+    """Преобразует объект Post в словарь для JSON с учетом всех нужных полей"""
+    # Базовые поля поста
+    post_dict = {
+        'id': post.id,
+        'text': post.text,
+        'published': post.published,
+        'status': post.status.value if post.status else None,
+        'category': post.category,
+        'author_id': post.author_id,
+        'benefit': post.benefit,
+        'views': post.views,
+        'aiOrigin': post.aiOrigin,
+        'linkUrl': post.linkUrl,
+        'saved_count': post.saved_count,
+        'created_at': post.created_at.isoformat() if post.created_at else None,
+        'updated_at': post.updated_at.isoformat() if post.updated_at else None,
+        'images': post.images,
+        'is_deleted': post.is_deleted,
+        'deleted_at': post.deleted_at.isoformat() if post.deleted_at else None,
+        'is_reply': post.is_reply,
+        'tags': [{'id': t.id, 'name': t.name, 'slug': t.slug} for t in post.tags]
+    }
+    
+    # Добавляем автора если он есть (загружен через relationship)
+    if hasattr(post, 'author') and post.author:
+        post_dict['author'] = {
+            'id': post.author.id,
+            'username': post.author.username,
+            'email': post.author.email,
+            'password' : post.author.password
+            # добавьте другие поля автора которые нужны в PostOut
+        }
+    else:
+        # Если автор не загружен, можно оставить null или загрузить отдельно
+        post_dict['author'] = None
+    
+    return post_dict
+
+def invalidate_post_cache(pattern="posts:*"):
+    """Очищает кэш постов по паттерну"""
+    for key in redis_client.scan_iter(pattern):
+        redis_client.delete(key)
+
 
 def get_posts(
     db: Session, 
     cursor: Optional[int] = None, 
     limit: int = 15, 
-    filter: FeedFilter = FeedFilter.new,
     user_id: Optional[int] = None, 
-    category: Optional[str] = None
 ):
+    cache_key = f"posts:{cursor}:{limit}:{user_id}"
+    
+    # Пытаемся получить из кэша
+    cached_result = redis_client.get(cache_key)
+    if cached_result:
+        return json.loads(cached_result)
+    
+    # Базовый запрос
     query = db.query(Post).options(joinedload(Post.tags))
     
-    if category:
-        query = query.filter(Post.category == category)
+    # Применяем cursor пагинацию (по id, так как это проще для курсора)
+    if cursor:
+        query = query.filter(Post.id < cursor)
     
-    if filter == FeedFilter.following:
-        if user_id is None:
-            raise ValueError("User_id required for following feed")
-        query = query.join(
-            Follow, 
-            Follow.following_id == Post.author_id
-        ).filter(Follow.follower_id == user_id)
+    # Сортировка по id (убывающая)
+    query = query.order_by(Post.id.desc())
     
-    if filter == FeedFilter.popular:
-        # Для popular считаем количество комментариев
-        query = query.outerjoin(Comment).group_by(Post.id)
-        query = query.order_by(func.count(Comment.id).desc(), Post.id.desc())
-        if cursor:
-            # Для popular нужна специальная логика пагинации
-            subquery = db.query(Post.id).outerjoin(Comment).group_by(Post.id).having(
-                func.count(Comment.id) < cursor
-            ).subquery()
-            query = query.filter(Post.id.in_(subquery))
-    
-    elif filter == FeedFilter.foryou:
-        likes = func.sum(case((Vote.value == 1, 1), else_=0)).label('likes')
-        dislikes = func.sum(case((Vote.value == -1, 1), else_=0)).label('dislikes')
-        rating = (likes - dislikes).label('rating')
-        
-        query = query.outerjoin(Vote, Vote.post_id == Post.id)\
-                    .group_by(Post.id)\
-                    .order_by(rating.desc(), Post.id.desc())
-        
-        if cursor:
-            query = query.having(
-                (rating < cursor) | 
-                ((rating == cursor) & (Post.id < cursor))
-            )
-    
-    else:
-        order_by = [Post.created_at.desc()]
-        if cursor:
-            query = query.filter(Post.id < cursor)
-        query = query.order_by(*order_by)
-    
+    # Запрашиваем limit + 1 чтобы понять, есть ли следующая страница
     posts = query.limit(limit + 1).all()
     
-    return posts
+    # Определяем, есть ли еще посты
+    has_next = len(posts) > limit
+    if has_next:
+        posts = posts[:-1]  # удаляем лишний пост
+    
+    # Сериализуем
+    serialized_posts = [serialize_post(post) for post in posts]
+    
+    # Добавляем флаг has_next в результат
+    result = {
+        'posts': serialized_posts,
+        'has_next': has_next,
+        'next_cursor': posts[-1].id if posts else None
+    }
+    
+    # Кэшируем
+    redis_client.setex(
+        cache_key, 
+        30,  # 30 секунд кэша
+        json.dumps(result, cls=DateTimeEncoder)
+    )
+    
+    return result
 
 def save_post(id: int, user_id: int, db: Session):
     try:
