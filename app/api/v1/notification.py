@@ -1,16 +1,12 @@
-from http.client import HTTPException
 from typing import List, Optional
-
 from fastapi import APIRouter, Depends, Path, Query, status
 from sqlalchemy.orm import Session
-
 from app.api.deps import get_db
 from app.crud import notification as crud_notification
-from app.models.post import NotificationStatus
+from app.models.notification import NotificationStatus
 from app.schemas.notification import NotificationCreate, NotificationOut, UnreadCountOut, NotificationUpdate
 
 router = APIRouter()
-
 
 @router.get("/", response_model=List[NotificationOut])
 def get_my_notifications(
@@ -58,7 +54,6 @@ def archive_notification(
 ):
     return crud_notification.archive_notification(db, notification_id, user_id)
 
-
 @router.delete("/{notification_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_notification(
     notification_id: int = Path(..., description="ID уведомления", ge=1),
@@ -67,7 +62,6 @@ def delete_notification(
 ):
     crud_notification.delete_notification(db, notification_id, user_id)
     return None
-
 
 @router.post("/", response_model=NotificationOut, status_code=status.HTTP_201_CREATED)
 def create_notification_endpoint(

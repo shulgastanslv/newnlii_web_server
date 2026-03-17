@@ -39,6 +39,7 @@ class User(Base):
         back_populates="follower",
         cascade="all, delete-orphan"
     )
+    votes = relationship("Vote", back_populates="user")
     comments = relationship("Comment", back_populates="author", cascade="all, delete-orphan")
     
 

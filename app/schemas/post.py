@@ -1,91 +1,75 @@
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel
-from app.schemas.comments import CommentsOut
+from pydantic import BaseModel, ConfigDict, Field
+from app.schemas.comments import CommentOut
 from app.schemas.user import UserOut
 
 class TagResponse(BaseModel):
-    name: str
-    slug: str
+    id: int
+    name: str = Field(..., max_length=50)
+    slug: str = Field(..., max_length=50)
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
 
 class PostBase(BaseModel):
-    id : Optional[int] = None
-    text : str
-    published : bool = False
-    author_id : int
-    views : int = 0
-    is_reply : bool = False
-    is_deleted : bool = False
-    images : List[str] = None
-    tags: List[TagResponse] = []
-    category : str
-    status : str
-    benefit: Optional[str] = None
-    aiOrigin: Optional[str] = None
-    linkUrl: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    deleted_at: Optional[datetime] = None
+    text: str = Field(..., min_length=1, max_length=5000)
+    category: str = Field(..., max_length=50)
+    status: str = Field(..., max_length=20)
+    benefit: Optional[str] = Field(None, max_length=1000)
+    ai_origin: Optional[str] = Field(None, max_length=200)
+    link_url: Optional[str] = Field(None, max_length=500)
+    published: bool = False
+    is_reply: bool = False
+    images: List[str] = Field(default_factory=list, max_length=10)
 
 
-class PostCreate(PostBase):
-    pass
+class PostCreate(BaseModel):
+    text: str = Field(..., min_length=1, max_length=5000)
+    category: str = Field(..., max_length=50)
+    status: str = Field(default="unsent", max_length=20)
+    benefit: Optional[str] = Field(None, max_length=1000)
+    ai_origin: Optional[str] = Field(None, max_length=200)
+    link_url: Optional[str] = Field(None, max_length=500)
+    published: bool = False
+    is_reply: bool = False
+    images: List[str] = Field(default_factory=list)
+    tags: List[str] = Field(default_factory=list)
 
-class SavedPostOut(BaseModel):
-  id : int
-  user_id : int
-  post_id  : int
-  user : UserOut
-  saved_at : datetime
-  class Config:
-        from_attributes = True 
+
+class PostUpdate(BaseModel):
+    text: Optional[str] = Field(None, min_length=1, max_length=5000)
+    category: Optional[str] = Field(None, max_length=50)
+    status: Optional[str] = Field(None, max_length=20)
+    benefit: Optional[str] = Field(None, max_length=1000)
+    ai_origin: Optional[str] = Field(None, max_length=200)
+    link_url: Optional[str] = Field(None, max_length=500)
+    published: Optional[bool] = None
+    is_reply: Optional[bool] = None
+    images: Optional[List[str]] = None
+    tags: Optional[List[str]] = None
+
 
 class PostOut(PostBase):
-  author : UserOut
-  saved_by: List[SavedPostOut] = []
-  comments: List[CommentsOut] = [] 
-
-def serialize_post(post : PostOut):
-    post_dict = {
-        'id': post.id,
-        'text': post.text,
-        'published': post.published,
-        'status': post.status if post.status else None,
-        'category': post.category,
-        'author_id': post.author_id,
-        'benefit': post.benefit,
-        'views': post.views,
-        'aiOrigin': post.aiOrigin,
-        'linkUrl': post.linkUrl,
-        'created_at': post.created_at.isoformat() if post.created_at else None,
-        'updated_at': post.updated_at.isoformat() if post.updated_at else None,
-        'images': post.images,
-        'is_deleted': post.is_deleted,
-        'deleted_at': post.deleted_at.isoformat() if post.deleted_at else None,
-        'is_reply': post.is_reply,
-        'tags': [{'id': t.id, 'name': t.name, 'slug': t.slug} for t in post.tags]
-    }
+    id: int
+    author_id: int
+    author: UserOut
+    views: int = 0
+    is_deleted: bool = False
+    tags: List[TagResponse] = []
+    comments: List[CommentOut] = []
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    deleted_at: Optional[datetime] = None
     
-    if hasattr(post, 'author') and post.author:
-        post_dict['author'] = {
-            'id': post.author.id,
-            'username': post.author.username,
-            'email': post.author.email,
-            'password' : post.author.password
-        }
-    else:
-        post_dict['author'] = None
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SavedPostOut(BaseModel):
+    id: int
+    user_id: int
+    post_id: int
+    user: UserOut
+    saved_at: datetime
     
-    return post_dict
-
-from enum import Enum
-
-class FeedFilter(str, Enum):
-    foryou = "foryou"
-    all = "all"
-    following = "following"
-    popular = "popular"
-    new = "new"
+    model_config = ConfigDict(from_attributes=True)

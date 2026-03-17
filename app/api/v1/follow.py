@@ -8,7 +8,6 @@ from app.schemas.follow import FollowResponse
 
 router = APIRouter()
 
-
 @router.post("/", response_model=FollowResponse, status_code=status.HTTP_201_CREATED)
 def follow_user(
     follower_id: int = Query(..., description="ID пользователя, который подписывается"),
@@ -16,7 +15,6 @@ def follow_user(
     db: Session = Depends(get_db)
 ):
     return crud_follow.follow_user(db, follower_id, following_id)
-
 
 @router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
 def unfollow_user(
@@ -27,7 +25,6 @@ def unfollow_user(
     crud_follow.unfollow_user(db, follower_id, following_id)
     return None
 
-
 @router.get("/followers", response_model=List[FollowResponse])
 def get_followers(
     user_id: int = Query(..., description="ID пользователя для получения подписчиков"),
@@ -36,7 +33,6 @@ def get_followers(
     db: Session = Depends(get_db)
 ):
     return crud_follow.get_followers(db, user_id=user_id, skip=skip, limit=limit)
-
 
 @router.get("/following", response_model=List[FollowResponse])
 def get_following(
@@ -47,7 +43,6 @@ def get_following(
 ):
     return crud_follow.get_following(db, user_id=user_id, skip=skip, limit=limit)
 
-
 @router.get("/status")
 def follow_status(
     follower_id: int = Query(..., description="ID потенциального подписчика"),
@@ -57,7 +52,6 @@ def follow_status(
     is_following = crud_follow.get_following(db, user_id=follower_id)
     following_ids = [f.following_id for f in is_following]
     return {"is_following": following_id in following_ids}
-
 
 @router.get("/count")
 def follow_status(

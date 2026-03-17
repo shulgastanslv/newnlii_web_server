@@ -1,11 +1,8 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import List
-
 from fastapi import HTTPException
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from app.models.user import Follow
-
 
 def follow_user(
     db: Session,
@@ -40,7 +37,6 @@ def follow_user(
 
         return follow
 
-
 def unfollow_user(
     db: Session,
     follower_id: int,
@@ -60,7 +56,6 @@ def unfollow_user(
         db.delete(follow)
         db.commit()
 
-
 def get_followers(
     db: Session,
     user_id: int,
@@ -72,7 +67,6 @@ def get_followers(
         ).order_by(
             Follow.created_at.desc()
         ).offset(skip).limit(limit).all()
-
 
 def get_following(
     db: Session,

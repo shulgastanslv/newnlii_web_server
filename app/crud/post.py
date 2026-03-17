@@ -1,20 +1,14 @@
-from datetime import datetime, timedelta, timezone
 import json
+from datetime import datetime, time, timedelta, timezone
 from typing import Any, Dict, List, Optional
 from fastapi import HTTPException
 from sqlalchemy import func
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, selectinload
 from app.encoders import DateTimeEncoder
 from app.models.post import Post, SavedPost, Tag, post_tags
-from app.schemas.post import PostCreate, serialize_post
+from app.models.comment import Comment
+from app.schemas.post import PostCreate, PostOut
 from app.redis_client import redis_client
-import json
-from typing import Optional, List, Any
-from datetime import timedelta
-
-def invalidate_post_cache(pattern="posts:*"):
-    for key in redis_client.scan_iter(pattern):
-        redis_client.delete(key)
 
 def get_posts(
     db: Session, 
@@ -24,15 +18,22 @@ def get_posts(
 ):
     cache_key = f"posts:{cursor}:{limit}:{user_id}"
     
-    cached_result = redis_client.get(cache_key)
+    cached_result = redis_client.get_json(cache_key)
     if cached_result:
-        return json.loads(cached_result)
+        return {
+            'posts': [PostOut.model_validate(post) for post in cached_result],
+            'cache_result': cached_result,
+            'has_next': False,  # Для кэша has_next всегда False
+            'next_cursor': None
+        }
     
-    query = db.query(Post).options(joinedload(Post.tags))
-    
+    query = db.query(Post).options(selectinload(Post.tags), 
+                                   selectinload(Post.comments).selectinload(Comment.author), 
+                                    selectinload(Post.votes) )     
     if cursor:
         query = query.filter(Post.id < cursor)
-    
+    if user_id:
+        query = query.filter(Post.author_id == user_id) 
     query = query.order_by(Post.id.desc())
     
     posts = query.limit(limit + 1).all()
@@ -41,22 +42,52 @@ def get_posts(
     if has_next:
         posts = posts[:-1]
     
-    serialized_posts = [serialize_post(post) for post in posts]
+    pydantic_posts = [PostOut.model_validate(post) for post in posts]
     
     result = {
-        'posts': serialized_posts,
+        'posts': pydantic_posts,
+        'cache_result': [post.model_dump() for post in pydantic_posts],
         'has_next': has_next,
         'next_cursor': posts[-1].id if posts else None
     }
     
-    redis_client.setex(
-        cache_key, 
-        30,  # 30 секунд кэша
-        json.dumps(result, cls=DateTimeEncoder)
-    )
-    
+    redis_client.setex(cache_key, 60, result['cache_result'])
+
     return result
 
+def preload_posts(db: Session, limit: int = 50) -> Dict[str, Any]:
+    cache_key = "posts:preload:latest"
+    
+    if redis_client.exists(cache_key):
+        return {"status": "already_preloaded", "count": redis_client.get_json(cache_key + ":count")}
+    
+    query = db.query(Post).options(
+        selectinload(Post.tags), 
+        selectinload(Post.comments).selectinload(Comment.author), 
+        selectinload(Post.votes)
+    ).order_by(Post.id.desc())
+    
+    posts = query.limit(limit).all()
+    
+    if not posts:
+        return {"status": "no_posts", "count": 0}
+    
+    pydantic_posts = [PostOut.model_validate(post) for post in posts]
+    cache_data = [post.model_dump() for post in pydantic_posts]
+    
+    redis_client.setex(cache_key, 300, cache_data)  # 5 минут TTL
+    
+    redis_client.setex(cache_key + ":count", 300, len(cache_data))
+    redis_client.setex(cache_key + ":timestamp", 300, int(time.time()))
+    redis_client.setex(cache_key + ":limit", 300, limit)
+    
+    return {
+        "status": "success",
+        "count": len(cache_data),
+        "key": cache_key,
+        "ttl": 300
+    }
+    
 def save_post(id: int, user_id: int, db: Session):
         existing_save = db.query(SavedPost).filter(
             SavedPost.post_id == id,
@@ -80,7 +111,6 @@ def save_post(id: int, user_id: int, db: Session):
         
         return save_post
         
-  
 def delete_saved_post(id: int, user_id: int, db: Session):
         saved_post = db.query(SavedPost).filter(
             SavedPost.post_id == id,
@@ -148,7 +178,6 @@ def create_post(post_data: PostCreate, db: Session):
         db.commit()
         db.refresh(db_post)
         return db_post
-  
     
 def get_post_by_id(db: Session, id: int) -> Post:
 
@@ -162,8 +191,15 @@ def get_post_by_id(db: Session, id: int) -> Post:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching post: {str(e)}")
     
-
 def get_popular_tags(db: Session, limit: int = 10) -> List[Dict[str, Any]]:
+        
+        cache_key = f"popular:{limit}"
+        
+        cached_result = redis_client.get(cache_key)
+        
+        if cached_result:
+            return json.loads(cached_result)
+    
         popular_tags = db.query(
             Tag.id,
             Tag.name,
@@ -177,17 +213,16 @@ def get_popular_tags(db: Session, limit: int = 10) -> List[Dict[str, Any]]:
             func.count(post_tags.c.post_id).desc()
         ).limit(limit).all()
         
-        result = [
-            {
-                'id': tag.id,
-                'name': tag.name,
-                'slug': tag.slug,
-                'usage_count': tag.usage_count
-            }
-            for tag in popular_tags
-        ]
-        
-        return result
+        # serialize_tags = [serialize_tag(tag) for tag in popular_tags]
+          
+        redis_client.setex(
+            cache_key, 
+            300, 
+            json.dumps([], cls=DateTimeEncoder)
+
+        )
+
+        return []
 
 def delete_post(post_id: int, user_id: int, db: Session):
         post = db.query(Post).filter(
@@ -206,4 +241,3 @@ def delete_post(post_id: int, user_id: int, db: Session):
         
         return True
   
-    

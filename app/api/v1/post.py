@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db
 from app.crud import post as crud_post
 from typing import List, Optional
-from app.schemas.post import FeedFilter, PostCreate, PostOut, SavedPostOut
+from app.schemas.post import PostCreate, PostOut, SavedPostOut
 
 router = APIRouter()
 

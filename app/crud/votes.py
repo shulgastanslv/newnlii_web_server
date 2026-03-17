@@ -2,10 +2,8 @@ from datetime import datetime, timedelta
 from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
-
-from app.models.post import Vote
+from app.models.vote import Vote
 from app.schemas.votes import VoteCreate
-
 
 def create_vote(db: Session, vote_in : VoteCreate):
 
@@ -35,15 +33,11 @@ def create_vote(db: Session, vote_in : VoteCreate):
 
         return db_vote
 
-
-
 def get_votes_by_post(db: Session, post_id: int):
 
         return db.query(Vote).filter(
             Vote.post_id == post_id
         ).all()
-
-
 
 def delete_vote(db: Session, post_id: int, user_id: int):
     try:

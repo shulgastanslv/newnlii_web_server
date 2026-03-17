@@ -1,15 +1,12 @@
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional
-
+from typing import List
 from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
+from app.models.comment import Comment
+from app.schemas.comments import CommentCreate
 
-from app.models.post import Comment
-from app.schemas.comments import CommentsCreate
-
-
-def create_comment(db: Session, comment_in: CommentsCreate) -> Comment:
+def create_comment(db: Session, comment_in: CommentCreate) -> Comment:
     try:
 
         moscow_time = datetime.utcnow() + timedelta(hours=3)
@@ -28,7 +25,6 @@ def create_comment(db: Session, comment_in: CommentsCreate) -> Comment:
     except SQLAlchemyError as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-
 
 def get_comments_by_post(
     db: Session,
@@ -50,7 +46,6 @@ def get_comments_by_post(
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail=f"Error fetching comments: {str(e)}")
 
-
 def get_comment_by_id(db: Session, comment_id: int) -> Comment:
     comment = db.query(Comment).filter(Comment.id == comment_id).first()
 
@@ -58,8 +53,6 @@ def get_comment_by_id(db: Session, comment_id: int) -> Comment:
         raise HTTPException(status_code=404, detail="Comment not found")
 
     return comment
-
-
 
 def delete_comment(
     db: Session,
@@ -86,7 +79,6 @@ def delete_comment(
     except SQLAlchemyError as e:
         db.rollback()
         raise Exception(status_code=500, detail=f"Error deleting comment: {str(e)}")
-
 
 def get_comment_count_by_post(db: Session, post_id: int) -> int:
     try:

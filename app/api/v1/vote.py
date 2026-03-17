@@ -9,7 +9,6 @@ from app.schemas.votes import VoteCreate, VoteOut
 
 router = APIRouter()
 
-
 @router.get("/", response_model=List[VoteOut])
 def get_votes_by_post(
     post_id: int = Query(...),

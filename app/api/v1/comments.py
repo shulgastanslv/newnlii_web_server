@@ -1,16 +1,13 @@
-from typing import List, Optional
-
+from typing import List
 from fastapi import APIRouter, Depends, Path, Query, status
 from sqlalchemy.orm import Session
-
 from app.api.deps import get_db
 from app.crud import comments as crud_comment
-from app.schemas.comments import CommentsCreate, CommentsOut
+from app.schemas.comments import CommentCreate, CommentOut
 
 router = APIRouter()
 
-
-@router.get("/", response_model=List[CommentsOut])
+@router.get("/", response_model=List[CommentOut])
 def get_comments_by_post(
     post_id: int = Query(..., description="ID поста"),
     skip: int = Query(0, ge=0),
@@ -26,22 +23,19 @@ def get_comments_by_post(
         include_deleted=include_deleted
     )
 
-
-@router.get("/{comment_id}", response_model=CommentsOut)
+@router.get("/{comment_id}", response_model=CommentOut)
 def get_comment(
     comment_id: int = Path(..., ge=1),
     db: Session = Depends(get_db)
 ):
     return crud_comment.get_comment_by_id(db, comment_id)
 
-
-@router.post("/", response_model=CommentsOut, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=CommentOut, status_code=status.HTTP_201_CREATED)
 def create_comment(
-    comment_in: CommentsCreate,
+    comment_in: CommentCreate,
     db: Session = Depends(get_db)
 ):
     return crud_comment.create_comment(db, comment_in)
-
 
 @router.delete("/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_comment(

@@ -1,12 +1,8 @@
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
-
 from fastapi import HTTPException
-from sqlalchemy import func
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, joinedload
-
-from app.models.post import Notification, NotificationStatus
+from app.models.notification import Notification, NotificationStatus
 from app.schemas.notification import NotificationCreate, NotificationUpdate
 
 
@@ -29,7 +25,6 @@ def create_notification(db: Session, notification_in: NotificationCreate) -> Not
         db.refresh(db_notification)
         return db_notification
 
-
 def get_user_notifications(
     db: Session,
     user_id: int,
@@ -49,13 +44,11 @@ def get_user_notifications(
             .offset(skip).limit(limit).all()
         return notifications
 
-
 def get_notification_by_id(db: Session, notification_id: int) -> Notification:
     notification = db.get(Notification, notification_id)
     if not notification:
         raise HTTPException(status_code=404, detail="Notification not found")
     return notification
-
 
 def mark_notification_as_read(db: Session, notification_id: int, user_id: int) -> Notification:
         notification = db.query(Notification).filter(
@@ -72,7 +65,6 @@ def mark_notification_as_read(db: Session, notification_id: int, user_id: int) -
             db.refresh(notification)
         return notification
 
-
 def mark_all_notifications_as_read(db: Session, user_id: int) -> int:
         result = db.query(Notification).filter(
             Notification.user_id == user_id,
@@ -83,7 +75,6 @@ def mark_all_notifications_as_read(db: Session, user_id: int) -> int:
         }, synchronize_session=False)
         db.commit()
         return result
-
 
 def archive_notification(db: Session, notification_id: int, user_id: int) -> Notification:
         notification = db.query(Notification).filter(
@@ -98,7 +89,6 @@ def archive_notification(db: Session, notification_id: int, user_id: int) -> Not
         db.refresh(notification)
         return notification
 
-
 def delete_notification(db: Session, notification_id: int, user_id: int) -> None:
         notification = db.query(Notification).filter(
             Notification.id == notification_id,
@@ -109,7 +99,6 @@ def delete_notification(db: Session, notification_id: int, user_id: int) -> None
 
         db.delete(notification)
         db.commit()
-
 
 def get_unread_count(db: Session, user_id: int) -> int:
         count = db.query(Notification).filter(
