@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import DataError, IntegrityError
+from sqlalchemy.exc import DataError, IntegrityError, SQLAlchemyError
 from fastapi import HTTPException
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
+from uuid import uuid4
 
 def get_users (db: Session):
     users = db.query(User).all()
@@ -22,13 +23,17 @@ def update_user(db: Session, user_update: UserUpdate):
 def create_user (user : UserCreate, db : Session):
     try:
         moscow_time = datetime.utcnow() + timedelta(hours=3)
+        user_id = str(uuid4())
 
         db_user = User(
-          username = user.username,
+          id = user_id,
+          username = user.username or user_id,
           password = user.password,
           email = user.email,
-          created_at = moscow_time
+          created_at = moscow_time,
+          is_google = user.is_google
         )
+        
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
@@ -43,7 +48,7 @@ def get_user_by_email(db: Session, email: str):
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
-def get_user_by_id (db: Session, id : int):
+def get_user_by_id (db: Session, id : str):
     user = db.query(User).filter(User.id == id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")

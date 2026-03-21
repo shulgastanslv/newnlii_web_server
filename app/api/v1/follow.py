@@ -10,16 +10,16 @@ router = APIRouter()
 
 @router.post("/", response_model=FollowResponse, status_code=status.HTTP_201_CREATED)
 def follow_user(
-    follower_id: int = Query(..., description="ID пользователя, который подписывается"),
-    following_id: int = Query(..., description="ID пользователя, на которого подписываются"),
+    follower_id: str = Query(..., description="ID пользователя, который подписывается"),
+    following_id: str = Query(..., description="ID пользователя, на которого подписываются"),
     db: Session = Depends(get_db)
 ):
     return crud_follow.follow_user(db, follower_id, following_id)
 
 @router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
 def unfollow_user(
-    follower_id: int = Query(..., description="ID пользователя, который отписывается"),
-    following_id: int = Query(..., description="ID пользователя, от которого отписываются"),
+    follower_id: str = Query(..., description="ID пользователя, который отписывается"),
+    following_id: str = Query(..., description="ID пользователя, от которого отписываются"),
     db: Session = Depends(get_db)
 ):
     crud_follow.unfollow_user(db, follower_id, following_id)
@@ -27,7 +27,7 @@ def unfollow_user(
 
 @router.get("/followers", response_model=List[FollowResponse])
 def get_followers(
-    user_id: int = Query(..., description="ID пользователя для получения подписчиков"),
+    user_id: str = Query(..., description="ID пользователя для получения подписчиков"),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
     db: Session = Depends(get_db)
@@ -36,7 +36,7 @@ def get_followers(
 
 @router.get("/following", response_model=List[FollowResponse])
 def get_following(
-    user_id: int = Query(..., description="ID пользователя для получения подписок"),
+    user_id: str = Query(..., description="ID пользователя для получения подписок"),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
     db: Session = Depends(get_db)
@@ -45,8 +45,8 @@ def get_following(
 
 @router.get("/status")
 def follow_status(
-    follower_id: int = Query(..., description="ID потенциального подписчика"),
-    following_id: int = Query(..., description="ID потенциального пользователя, на которого подписываются"),
+    follower_id: str = Query(..., description="ID потенциального подписчика"),
+    following_id: str = Query(..., description="ID потенциального пользователя, на которого подписываются"),
     db: Session = Depends(get_db)
 ):
     is_following = crud_follow.get_following(db, user_id=follower_id)
@@ -55,7 +55,7 @@ def follow_status(
 
 @router.get("/count")
 def follow_status(
-    user_id: int = Query(..., description="ID пользователя"),
+    user_id: str = Query(..., description="ID пользователя"),
     db: Session = Depends(get_db)
 ):
     res = crud_follow.get_follow_count(db, user_id=user_id)

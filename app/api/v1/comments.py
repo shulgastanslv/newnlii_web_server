@@ -40,7 +40,7 @@ def create_comment(
 @router.delete("/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_comment(
     comment_id: int = Path(..., ge=1),
-    user_id: int = Query(..., description="ID автора комментария"),
+    user_id: str = Query(..., description="ID автора комментария"),
     db: Session = Depends(get_db)
 ):
     crud_comment.delete_comment(db, comment_id, user_id)

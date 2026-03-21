@@ -14,7 +14,7 @@ def get_posts(
     db: Session, 
     cursor: Optional[int] = None, 
     limit: int = 15, 
-    user_id: Optional[int] = None, 
+    user_id: Optional[str] = None, 
 ):
     cache_key = f"posts:{cursor}:{limit}:{user_id}"
     
@@ -23,12 +23,13 @@ def get_posts(
         return {
             'posts': [PostOut.model_validate(post) for post in cached_result],
             'cache_result': cached_result,
-            'has_next': False,  # Для кэша has_next всегда False
+            'has_next': False,
             'next_cursor': None
         }
     
     query = db.query(Post).options(selectinload(Post.tags), 
                                    selectinload(Post.comments).selectinload(Comment.author), 
+                                   selectinload(Post.saved_by),
                                     selectinload(Post.votes) )     
     if cursor:
         query = query.filter(Post.id < cursor)
@@ -140,9 +141,6 @@ def create_post(post_data: PostCreate, db: Session):
             category=post_data.category,
             created_at=moscow_time,
             status = post_data.status,
-            benefit = post_data.benefit,
-            aiOrigin = post_data.aiOrigin,
-            linkUrl = post_data.linkUrl
         )
         
         db.add(db_post)

@@ -14,7 +14,7 @@ router = APIRouter()
 def get_all_posts_route(
     cursor: int | None = None,
     limit: int = Query(5, ge=1, le=50),
-    userId : int | None = None,
+    userId : str | None = None,
     db: Session = Depends(get_db)
 ):
     try:

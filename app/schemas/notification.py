@@ -7,8 +7,8 @@ from app.schemas.user import UserOut
 
 
 class NotificationBase(BaseModel):
-    user_id: int
-    actor_id: Optional[int] = None
+    user_id: str
+    actor_id: Optional[str] = None
     post_id: Optional[int] = None
     type: NotificationType
     status: NotificationStatus = NotificationStatus.UNREAD
@@ -18,8 +18,8 @@ class NotificationBase(BaseModel):
 
 
 class NotificationCreate(BaseModel):
-    user_id: int
-    actor_id: Optional[int] = None
+    user_id: str
+    actor_id: Optional[str] = None
     post_id: Optional[int] = None
     type: NotificationType
     title: str = Field(..., max_length=200)
@@ -31,7 +31,6 @@ class NotificationUpdate(BaseModel):
     status: Optional[NotificationStatus] = None
     read_at: Optional[datetime] = None
 
-
 class NotificationOut(NotificationBase):
     id: int
     created_at: datetime
@@ -39,10 +38,8 @@ class NotificationOut(NotificationBase):
     actor: Optional[UserOut] = None
     post: Optional[PostOut] = None
     user: UserOut
-    
     model_config = ConfigDict(from_attributes=True)
 
-
 class UnreadCountOut(BaseModel):
-    user_id: int
+    user_id: str
     unread_count: int = 0

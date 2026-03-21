@@ -6,8 +6,8 @@ from app.models.user import Follow
 
 def follow_user(
     db: Session,
-    follower_id: int,
-    following_id: int
+    follower_id: str,
+    following_id: str
 ) -> Follow:
         moscow_time = datetime.utcnow() + timedelta(hours=3)
 
@@ -39,8 +39,8 @@ def follow_user(
 
 def unfollow_user(
     db: Session,
-    follower_id: int,
-    following_id: int
+    follower_id: str,
+    following_id: str
 ) -> None:
         follow = db.query(Follow).filter(
             Follow.follower_id == follower_id,
@@ -58,7 +58,7 @@ def unfollow_user(
 
 def get_followers(
     db: Session,
-    user_id: int,
+    user_id: str,
     skip: int = 0,
     limit: int = 100
 ) -> List[Follow]:
@@ -70,7 +70,7 @@ def get_followers(
 
 def get_following(
     db: Session,
-    user_id: int,
+    user_id: str,
     skip: int = 0,
     limit: int = 100
 ) -> List[Follow]:
@@ -82,7 +82,7 @@ def get_following(
 
 def get_follow_count(
     db: Session,
-    user_id: int
+    user_id: str
 ):
         followers_count = db.query(Follow).filter(
             Follow.following_id == user_id

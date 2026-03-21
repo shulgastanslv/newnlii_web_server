@@ -14,7 +14,7 @@ def get_all_users_route(db: Session = Depends(get_db)):
 
 @router.get("/{user_id}", response_model=UserOut)
 def get_user_by_id_route(
-    user_id: int = Path(..., description="ID пользователя", ge=1), 
+    user_id: str, 
     db: Session = Depends(get_db)
 ):
     return crud_user.get_user_by_id(db, user_id)
@@ -25,12 +25,8 @@ def get_user_by_email_route(email: str, db: Session = Depends(get_db)):
 
 @router.post("/", response_model=UserOut)
 def create_user_route(user : UserCreate, db: Session = Depends(get_db)):
-    print(user.email)
-    print(user.username)
     return crud_user.create_user(user, db)
-
 
 @router.patch("/update", response_model=UserOut)
 def update_user_route(user : UserUpdate, db: Session = Depends(get_db)):
-    print(user.username)
     return crud_user.update_user(db, user)
