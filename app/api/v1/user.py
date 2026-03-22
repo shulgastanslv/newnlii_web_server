@@ -5,6 +5,7 @@ import random
 from pydantic import BaseModel
 from fastapi import status
 from sqlalchemy.orm import Session
+from app.crypto import hash_password, verify_password
 from app.redis_client import redis_client
 from app.api.deps import get_db
 from app.crud import user as crud_user
@@ -40,7 +41,63 @@ def create_user_route(user : UserCreate, db: Session = Depends(get_db)):
 def update_user_route(user : UserUpdate, db: Session = Depends(get_db)):
     return crud_user.update_user(db, user)
 
+class LoginRequest (BaseModel):
+    email: str
+    password : str
 
+from pydantic import BaseModel
+from typing import Optional
+
+class LoginResponse(BaseModel):
+    success: bool
+    message: str
+    data: Optional[dict] = None 
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+@router.post("/login", response_model=LoginResponse)
+def login(
+    req: LoginRequest, 
+    db: Session = Depends(get_db)
+):
+    user = crud_user.get_user_by_email(db, req.email)
+    if user.is_google:
+        raise HTTPException(
+            status_code=400,
+            detail="This account uses Google Sign‑In. Use Google login."
+        )
+    if not user:
+        return LoginResponse(
+            success=False,
+            message="Пользователь не найден!"
+        )
+
+    if not user.password or user.password.strip() == "":
+        raise HTTPException(status_code=400, detail="Пользователь без пароля! Не валидный аккаунт!")
+    
+    print(req.password)
+    print(user.password)
+    if not verify_password(req.password, user.password):
+        return LoginResponse(
+            success=False,
+            message="Неверный пароль! Попробуйте еще раз"
+        )
+
+    user_data = {
+        "id": user.id,
+        "email": user.email,
+        "username": getattr(user, "username", None),
+    }
+    
+    return LoginResponse(
+        success=True,
+        message="Login successful",
+        data=user_data,
+    )
+
+              
 class ForgotPasswordRequest(BaseModel):
     email: str
 
@@ -129,12 +186,10 @@ async def verify_code(request: VerifyCodeRequest):
         "message": "Код подтвержден"
     }
     
-    
 @router.post("/reset-password")
 async def reset_password(request: ResetPasswordRequest,  db: Session = Depends(get_db)):
     email = request.email
     password = request.password
-    pwd_context = CryptContext(schemes=["argon2", "bcrypt"], deprecated="auto")
 
     if len(password) < 6:
         raise HTTPException(
@@ -151,7 +206,7 @@ async def reset_password(request: ResetPasswordRequest,  db: Session = Depends(g
     if not user:
         raise HTTPException(404, "Пользователь не найден")
     
-    hashed_password = pwd_context.hash(password)
+    hashed_password = hash_password(password)
     update = UserUpdate(
         id=user.id,
         password = hashed_password

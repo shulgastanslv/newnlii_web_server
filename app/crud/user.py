@@ -3,6 +3,7 @@ from uuid import uuid4
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import DataError, IntegrityError
 from fastapi import HTTPException
+from app.crypto import hash_password
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate, UserOut
 from app.redis_client import redis_client
@@ -10,7 +11,7 @@ from app.redis_client import redis_client
 def _user_to_cache(user: User) -> dict:
     return UserOut.model_validate(user).model_dump()
 
-def _cache_user(user: User, expiration: int = 60 * 10):  # 10 минут
+def _cache_user(user: User, expiration: int = 600):  # 10 минут
     key = f"user:{user.id}"
     redis_client.setex(key, expiration, _user_to_cache(user))
 
@@ -52,12 +53,22 @@ def get_user_by_email(db: Session, email: str):
 def create_user(user_create: UserCreate, db: Session):
     try:
         moscow_time = datetime.utcnow() + timedelta(hours=3)
-        user_id = str(uuid4())
+        userId = user_create.user_id
+        if user_create.is_google:
+            hashed_password = None
+        else:
+            if not user_create.password:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Password is required for non‑Google users"
+                )
+            hashed_password = hash_password(password=user_create.password)
+            userId=str(uuid4()),
 
         db_user = User(
-            id=user_id,
-            username=user_create.username or user_id,
-            password=user_create.password,
+            id=userId,
+            username=user_create.username or userId,
+            password=hashed_password,
             email=user_create.email,
             created_at=moscow_time,
             is_google=user_create.is_google,
@@ -67,7 +78,6 @@ def create_user(user_create: UserCreate, db: Session):
         db.commit()
         db.refresh(db_user)
 
-        # кэшируем по id и по email
         _cache_user(db_user)
         redis_client.setex(
             f"user:email:{db_user.email}",
@@ -77,10 +87,10 @@ def create_user(user_create: UserCreate, db: Session):
 
         return UserOut.model_validate(db_user)
 
+
     except (DataError, IntegrityError) as e:
         db.rollback()
         raise HTTPException(status_code=400, detail=f"User error while creating: {str(e)}")
-
 
 def update_user(db: Session, user_update: UserUpdate):
     db_user = db.query(User).filter(User.id == user_update.id).first()
@@ -106,7 +116,6 @@ def update_user(db: Session, user_update: UserUpdate):
 
     return UserOut.model_validate(db_user)
 
-
 def delete_user(db: Session, user_id: str):
     db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
@@ -120,7 +129,6 @@ def delete_user(db: Session, user_id: str):
 
     _uncache_user(user_id)
     return {"message": "User deleted"}
-
 
 def get_users(db: Session):
     users = db.query(User).all()

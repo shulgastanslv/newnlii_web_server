@@ -16,6 +16,7 @@ class UserBase(BaseModel):
     is_google : bool = False
 
 class UserCreate(BaseModel):
+    user_id : str
     username: Optional[str]  = Field(None, min_length=3, max_length=50)
     password: Optional[str] = Field(None, min_length=8, description="Hashed password")
     email: str = Field(..., min_length=5, max_length=100)
@@ -23,6 +24,7 @@ class UserCreate(BaseModel):
     
 class UserOut(UserBase):
     id: str 
+    password: Optional[str] = Field(None, min_length=8, description="Hashed password")
     verify: bool = False
     model_config = ConfigDict(from_attributes=True)
 
