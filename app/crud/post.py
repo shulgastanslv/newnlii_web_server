@@ -10,6 +10,9 @@ from app.models.comment import Comment
 from app.schemas.post import PostCreate, PostOut
 from app.redis_client import redis_client
 
+
+
+
 def get_posts(
     db: Session, 
     cursor: Optional[int] = None, 
