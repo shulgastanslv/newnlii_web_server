@@ -11,35 +11,31 @@ from app.schemas.post import PostCreate, PostOut
 from app.redis_client import redis_client
 
 
-
-
 def get_posts(
     db: Session, 
     cursor: Optional[int] = None, 
     limit: int = 15, 
-    user_id: Optional[str] = None, 
 ):
-    cache_key = f"posts:{cursor}:{limit}:{user_id}"
+    cache_key = f"posts:cursor:{cursor or 0}:limit:{limit}"
     
     cached_result = redis_client.get_json(cache_key)
     if cached_result:
         return {
-            'posts': [PostOut.model_validate(post) for post in cached_result],
-            'cache_result': cached_result,
-            'has_next': False,
-            'next_cursor': None
+            "posts": [PostOut.model_validate(post) for post in cached_result["posts"]],
+            "has_next": cached_result["has_next"],
+            "next_cursor": cached_result["next_cursor"],
         }
     
-    query = db.query(Post).options(selectinload(Post.tags), 
-                                   selectinload(Post.comments).selectinload(Comment.author), 
-                                   selectinload(Post.saved_by),
-                                    selectinload(Post.votes) )     
+    query = db.query(Post).options(
+        selectinload(Post.tags),
+        selectinload(Post.comments).selectinload(Comment.author),
+        selectinload(Post.saved_by),
+        selectinload(Post.votes),
+    )
     if cursor:
         query = query.filter(Post.id < cursor)
-    if user_id:
-        query = query.filter(Post.author_id == user_id) 
+
     query = query.order_by(Post.id.desc())
-    
     posts = query.limit(limit + 1).all()
     
     has_next = len(posts) > limit
@@ -49,13 +45,16 @@ def get_posts(
     pydantic_posts = [PostOut.model_validate(post) for post in posts]
     
     result = {
-        'posts': pydantic_posts,
-        'cache_result': [post.model_dump() for post in pydantic_posts],
-        'has_next': has_next,
-        'next_cursor': posts[-1].id if posts else None
+        "posts": pydantic_posts,
+        "has_next": has_next,
+        "next_cursor": posts[-1].id if posts else None,
     }
     
-    redis_client.setex(cache_key, 60, result['cache_result'])
+    redis_client.setex(cache_key, 300, {  # TTL 300 сек = 5 мин
+        "posts": [p.model_dump() for p in pydantic_posts],
+        "has_next": has_next,
+        "next_cursor": posts[-1].id if posts else None,
+    })
 
     return result
 
@@ -193,37 +192,54 @@ def get_post_by_id(db: Session, id: int) -> Post:
         raise HTTPException(status_code=500, detail=f"Error fetching post: {str(e)}")
     
 def get_popular_tags(db: Session, limit: int = 10) -> List[Dict[str, Any]]:
-        
-        cache_key = f"popular:{limit}"
-        
-        cached_result = redis_client.get(cache_key)
-        
-        if cached_result:
-            return json.loads(cached_result)
-    
-        popular_tags = db.query(
-            Tag.id,
-            Tag.name,
-            Tag.slug,
-            func.count(post_tags.c.post_id).label('usage_count')
-        ).join(
-            post_tags, Tag.id == post_tags.c.tag_id
-        ).group_by(
-            Tag.id, Tag.name, Tag.slug
-        ).order_by(
-            func.count(post_tags.c.post_id).desc()
-        ).limit(limit).all()
-        
-        # serialize_tags = [serialize_tag(tag) for tag in popular_tags]
-          
-        redis_client.setex(
-            cache_key, 
-            300, 
-            json.dumps([], cls=DateTimeEncoder)
+    cache_key = f"popular_tags:{limit}"
 
-        )
+    cached_result = redis_client.get(cache_key)
+    if cached_result:
+        return json.loads(cached_result)
 
-        return []
+    # делаем subquery / join по post_tags
+    subquery = db.query(
+        Tag.id,
+        Tag.name,
+        Tag.slug,
+        func.count(post_tags.c.post_id).label("usage_count"),
+    ).join(
+        post_tags, Tag.id == post_tags.c.tag_id
+    ).group_by(
+        Tag.id, Tag.name, Tag.slug
+    ).order_by(
+        func.count(post_tags.c.post_id).desc()
+    ).limit(limit).subquery()
+
+    # выносим в отдельный select, чтобы не ломать типы
+    rows = db.query(
+        subquery.c.id,
+        subquery.c.name,
+        subquery.c.slug,
+        subquery.c.usage_count,
+    ).all()
+
+    # собираем список словарей
+    result = [
+        {
+            "id": row.id,
+            "name": row.name,
+            "slug": row.slug,
+            "usage_count": row.usage_count,
+        }
+        for row in rows
+    ]
+
+    # кэш
+    redis_client.setex(
+        cache_key,
+        300,
+        json.dumps(result, cls=DateTimeEncoder),
+    )
+
+    return result
+
 
 def delete_post(post_id: int, user_id: int, db: Session):
         post = db.query(Post).filter(

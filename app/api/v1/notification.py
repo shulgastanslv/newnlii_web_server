@@ -10,7 +10,7 @@ router = APIRouter()
 
 @router.get("/", response_model=List[NotificationOut])
 def get_my_notifications(
-    user_id: int = Query(..., description="ID пользователя, чьи уведомления получить"),
+    user_id: str = Query(..., description="ID пользователя, чьи уведомления получить"),
     skip: int = Query(0, ge=0, description="Пропустить N уведомлений"),
     limit: int = Query(100, ge=1, le=500, description="Лимит записей"),
     status: Optional[List[NotificationStatus]] = Query(None, description="Фильтр по статусам"),
@@ -21,7 +21,7 @@ def get_my_notifications(
 
 @router.get("/unread-count", response_model=UnreadCountOut)
 def get_unread_notifications_count(
-    user_id: int = Query(..., description="ID пользователя"),
+    user_id: str = Query(..., description="ID пользователя"),
     db: Session = Depends(get_db)
 ):
     count = crud_notification.get_unread_count(db, user_id)
@@ -31,7 +31,7 @@ def get_unread_notifications_count(
 @router.patch("/{notification_id}/read", response_model=NotificationOut)
 def mark_notification_read(
     notification_id: int = Path(..., description="ID уведомления", ge=1),
-    user_id: int = Query(..., description="ID пользователя (владельца)"),
+    user_id: str = Query(..., description="ID пользователя (владельца)"),
     db: Session = Depends(get_db)
 ):
     return crud_notification.mark_notification_as_read(db, notification_id, user_id)
@@ -39,7 +39,7 @@ def mark_notification_read(
 
 @router.post("/read-all", status_code=status.HTTP_200_OK)
 def mark_all_notifications_read(
-    user_id: int = Query(..., description="ID пользователя"),
+    user_id: str = Query(..., description="ID пользователя"),
     db: Session = Depends(get_db)
 ):
     updated = crud_notification.mark_all_notifications_as_read(db, user_id)
@@ -49,7 +49,7 @@ def mark_all_notifications_read(
 @router.patch("/{notification_id}/archive", response_model=NotificationOut)
 def archive_notification(
     notification_id: int = Path(..., description="ID уведомления", ge=1),
-    user_id: int = Query(..., description="ID пользователя"),
+    user_id: str = Query(..., description="ID пользователя"),
     db: Session = Depends(get_db)
 ):
     return crud_notification.archive_notification(db, notification_id, user_id)
@@ -57,7 +57,7 @@ def archive_notification(
 @router.delete("/{notification_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_notification(
     notification_id: int = Path(..., description="ID уведомления", ge=1),
-    user_id: int = Query(..., description="ID пользователя"),
+    user_id: str = Query(..., description="ID пользователя"),
     db: Session = Depends(get_db)
 ):
     crud_notification.delete_notification(db, notification_id, user_id)

@@ -206,12 +206,8 @@ async def reset_password(request: ResetPasswordRequest,  db: Session = Depends(g
     if not user:
         raise HTTPException(404, "Пользователь не найден")
     
-    hashed_password = hash_password(password)
-    update = UserUpdate(
-        id=user.id,
-        password = hashed_password
-    )
-    crud_user.update_user(db, update)
+    crud_user.update_password(db, user.id, password)
+
     redis_client.delete(f"reset_code:{email}")
     redis_client.delete(f"reset_token:{email}")
     

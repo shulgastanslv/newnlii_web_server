@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from uuid import uuid4
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import DataError, IntegrityError
 from fastapi import HTTPException
@@ -91,6 +92,33 @@ def create_user(user_create: UserCreate, db: Session):
     except (DataError, IntegrityError) as e:
         db.rollback()
         raise HTTPException(status_code=400, detail=f"User error while creating: {str(e)}")
+
+class UpdatePassword(BaseModel):
+    password: str  # незахэшированный новый пароль
+    
+def update_password(db: Session, user_id: int, new_password: str) -> UserOut:
+    db_user = db.query(User).filter(User.id == user_id).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    hashed_password = hash_password(new_password)
+
+    db_user.password = hashed_password  
+
+    db.commit()
+    db.refresh(db_user)
+
+    _uncache_user(db_user.id)
+    _cache_user(db_user)
+    if db_user.email:
+        redis_client.setex(
+            f"user:email:{db_user.email}",
+            60 * 10,
+            UserOut.model_validate(db_user).model_dump(),
+        )
+
+    return UserOut.model_validate(db_user)
+
 
 def update_user(db: Session, user_update: UserUpdate):
     db_user = db.query(User).filter(User.id == user_update.id).first()

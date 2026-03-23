@@ -1,6 +1,7 @@
 from http.client import HTTPException
 import random
 from fastapi import APIRouter, Depends, Path, Query
+from pydantic import BaseModel
 import redis
 from sqlalchemy.orm import Session
 from app.api.deps import get_db
@@ -10,16 +11,19 @@ from app.schemas.post import PostCreate, PostOut, SavedPostOut
 
 router = APIRouter()
 
-@router.get("/", response_model=List[PostOut])
+class GetAllPosts(BaseModel):
+    posts : List[PostOut]
+    has_next : bool
+
+@router.get("/", response_model=GetAllPosts)
 def get_all_posts_route(
     cursor: int | None = None,
-    limit: int = Query(5, ge=1, le=50),
-    userId : str | None = None,
+    limit: int = Query(15, le=50),
     db: Session = Depends(get_db)
 ):
     try:
-        result = crud_post.get_posts(db, cursor=cursor, limit=limit, user_id=userId)
-        return result['posts']
+        result = crud_post.get_posts(db, cursor=cursor, limit=limit)
+        return result
     except HTTPException as e:
         raise e
     except Exception as e:
