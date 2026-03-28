@@ -57,7 +57,18 @@ def get_posts(
     })
 
     return result
+   
+def get_posts_by_user_id(db: Session, user_id: str):
+    return db.query(Post).filter(Post.author_id == user_id).order_by(Post.created_at.desc()).all()
+
+def get_saved_posts(db: Session, user_id: str):
+    saved_posts = db.query(SavedPost).filter(
+        SavedPost.user_id == user_id
+    ).order_by(SavedPost.saved_at.desc()).all()
     
+    return [saved.post for saved in saved_posts if saved.post]
+
+ 
 def save_post(id: int, user_id: str, db: Session):
         existing_save = db.query(SavedPost).filter(
             SavedPost.post_id == id,
