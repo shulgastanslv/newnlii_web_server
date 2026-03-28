@@ -52,6 +52,14 @@ class PostUpdate(BaseModel):
     images: Optional[List[str]] = None
     tags: Optional[List[str]] = None
 
+class SavedPostOut(BaseModel):
+    id: int
+    user_id: str
+    post_id: int
+    user: UserOut
+    saved_at: datetime
+    
+    model_config = ConfigDict(from_attributes=True)
 
 class PostOut(PostBase):
     id: int
@@ -63,15 +71,7 @@ class PostOut(PostBase):
     created_at: datetime
     updated_at: Optional[datetime] = None
     deleted_at: Optional[datetime] = None
-    saved_by : List[SavedPostOut] = None
+    saved_by : Optional[List[SavedPostOut]] = []
     model_config = ConfigDict(from_attributes=True)
 
 
-class SavedPostOut(BaseModel):
-    id: int
-    user_id: str
-    post_id: int
-    user: UserOut
-    saved_at: datetime
-    
-    model_config = ConfigDict(from_attributes=True)
