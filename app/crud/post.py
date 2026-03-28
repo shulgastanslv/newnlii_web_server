@@ -50,48 +50,15 @@ def get_posts(
         "next_cursor": posts[-1].id if posts else None,
     }
     
-    redis_client.setex(cache_key, 300, {  # TTL 300 сек = 5 мин
+    redis_client.setex(cache_key, 60, {
         "posts": [p.model_dump() for p in pydantic_posts],
         "has_next": has_next,
         "next_cursor": posts[-1].id if posts else None,
     })
 
     return result
-
-def preload_posts(db: Session, limit: int = 50) -> Dict[str, Any]:
-    cache_key = "posts:preload:latest"
     
-    if redis_client.exists(cache_key):
-        return {"status": "already_preloaded", "count": redis_client.get_json(cache_key + ":count")}
-    
-    query = db.query(Post).options(
-        selectinload(Post.tags), 
-        selectinload(Post.comments).selectinload(Comment.author), 
-        selectinload(Post.votes)
-    ).order_by(Post.id.desc())
-    
-    posts = query.limit(limit).all()
-    
-    if not posts:
-        return {"status": "no_posts", "count": 0}
-    
-    pydantic_posts = [PostOut.model_validate(post) for post in posts]
-    cache_data = [post.model_dump() for post in pydantic_posts]
-    
-    redis_client.setex(cache_key, 300, cache_data)  # 5 минут TTL
-    
-    redis_client.setex(cache_key + ":count", 300, len(cache_data))
-    redis_client.setex(cache_key + ":timestamp", 300, int(time.time()))
-    redis_client.setex(cache_key + ":limit", 300, limit)
-    
-    return {
-        "status": "success",
-        "count": len(cache_data),
-        "key": cache_key,
-        "ttl": 300
-    }
-    
-def save_post(id: int, user_id: int, db: Session):
+def save_post(id: int, user_id: str, db: Session):
         existing_save = db.query(SavedPost).filter(
             SavedPost.post_id == id,
             SavedPost.user_id == user_id
@@ -114,7 +81,7 @@ def save_post(id: int, user_id: int, db: Session):
         
         return save_post
         
-def delete_saved_post(id: int, user_id: int, db: Session):
+def delete_saved_post(id: int, user_id: str, db: Session):
         saved_post = db.query(SavedPost).filter(
             SavedPost.post_id == id,
             SavedPost.user_id == user_id
@@ -177,6 +144,8 @@ def create_post(post_data: PostCreate, db: Session):
         
         db.commit()
         db.refresh(db_post)
+        redis_client.invalidate_keys_by_pattern("posts:cursor:*")
+
         return db_post
     
 def get_post_by_id(db: Session, id: int) -> Post:
@@ -198,7 +167,6 @@ def get_popular_tags(db: Session, limit: int = 10) -> List[Dict[str, Any]]:
     if cached_result:
         return json.loads(cached_result)
 
-    # делаем subquery / join по post_tags
     subquery = db.query(
         Tag.id,
         Tag.name,
@@ -212,7 +180,6 @@ def get_popular_tags(db: Session, limit: int = 10) -> List[Dict[str, Any]]:
         func.count(post_tags.c.post_id).desc()
     ).limit(limit).subquery()
 
-    # выносим в отдельный select, чтобы не ломать типы
     rows = db.query(
         subquery.c.id,
         subquery.c.name,
@@ -220,7 +187,6 @@ def get_popular_tags(db: Session, limit: int = 10) -> List[Dict[str, Any]]:
         subquery.c.usage_count,
     ).all()
 
-    # собираем список словарей
     result = [
         {
             "id": row.id,
@@ -239,7 +205,6 @@ def get_popular_tags(db: Session, limit: int = 10) -> List[Dict[str, Any]]:
     )
 
     return result
-
 
 def delete_post(post_id: int, user_id: int, db: Session):
         post = db.query(Post).filter(

@@ -24,8 +24,10 @@ class RedisClient:
             value = value.encode('utf-8')
         return self.client.setex(key, seconds, value)
 
-    def delete(self, key: str) -> int:
-        return self.client.delete(key)
+    def delete(self, *keys: str) -> int:
+        if not keys:
+            return 0
+        return self.client.delete(*keys)
 
     def exists(self, key: str) -> bool:
         return self.client.exists(key) > 0
@@ -58,6 +60,15 @@ class RedisClient:
             pipe.execute()
         finally:
             pipe.close()
+            
+    def invalidate_keys_by_pattern(self, pattern: str):
+        cursor = b"0"
+        while cursor:
+            cursor_, keys = self.client.scan(cursor=cursor, match=pattern)
+            cursor = cursor_
+            if keys:
+                self.delete(*keys)
+    
 
 redis_client = RedisClient()
 

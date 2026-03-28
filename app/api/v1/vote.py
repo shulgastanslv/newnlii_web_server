@@ -28,7 +28,7 @@ def create_vote(
 @router.delete("/")
 def delete_vote(
     post_id: int = Query(...),
-    user_id: int = Query(...),
+    user_id: str = Query(...),
     db: Session = Depends(get_db)
 ):
     crud_vote.delete_vote(db, post_id, user_id)

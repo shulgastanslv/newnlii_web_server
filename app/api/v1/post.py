@@ -28,7 +28,8 @@ def get_all_posts_route(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-
+    
+    
 @router.get("/{post_id}", response_model=PostOut)
 def get_post_by_id_route(
     post_id: int = Path(..., description="ID поста", ge=1), 
@@ -69,7 +70,7 @@ def create_post_route(
 @router.post("/saved/{post_id}", status_code=201)
 def save_post_route(
     post_id: int = Path(..., description="ID поста для сохранения", ge=1),
-    user_id: int = Query(..., description="ID пользователя"),
+    user_id: str = Query(..., description="ID пользователя"),
     db: Session = Depends(get_db)
 ):
     post = crud_post.get_post_by_id(db, post_id)
@@ -84,7 +85,7 @@ def save_post_route(
 @router.delete("/saved/{post_id}", status_code=200)
 def unsave_post_route(
     post_id: int = Path(..., description="ID поста для удаления из сохраненных", ge=1),
-    user_id: int = Query(..., description="ID пользователя"),
+    user_id: str = Query(..., description="ID пользователя"),
     db: Session = Depends(get_db)
 ):
     try:

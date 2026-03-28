@@ -11,6 +11,11 @@ class TagResponse(BaseModel):
     
     model_config = ConfigDict(from_attributes=True)
 
+class Tag(BaseModel):
+    name: str = Field(..., max_length=50)
+    slug: str = Field(..., max_length=50)
+    
+    model_config = ConfigDict(from_attributes=True)
 
 class PostBase(BaseModel):
     text: str = Field(..., min_length=1, max_length=5000)
@@ -29,12 +34,10 @@ class PostCreate(BaseModel):
     category: str = Field(..., max_length=50)
     author_id : str
     status: str = Field(default="unsent", max_length=20)
-    aiOrigin: Optional[str] = Field(None, max_length=200)
-    linkUrl: Optional[str] = Field(None, max_length=500)
     published: bool = False
     is_reply: bool = False
     images: List[str] = Field(default_factory=list)
-    tags: List[str] = Field(default_factory=list)
+    tags: List[Tag] = Field(default_factory=list)
 
 
 class PostUpdate(BaseModel):
@@ -66,7 +69,7 @@ class PostOut(PostBase):
 
 class SavedPostOut(BaseModel):
     id: int
-    user_id: int
+    user_id: str
     post_id: int
     user: UserOut
     saved_at: datetime

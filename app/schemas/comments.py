@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 from app.schemas.user import UserOut
@@ -8,8 +8,9 @@ class CommentBase(BaseModel):
 
 class CommentCreate(BaseModel):
     post_id: int = Field(..., gt=0)
-    author_id: str = Field(..., gt=0)
+    author_id: str
     text: str = Field(..., min_length=1, max_length=2000)
+    parent_id: Optional[int] = None
 
 class CommentOut(CommentBase):
     id: int
@@ -20,3 +21,4 @@ class CommentOut(CommentBase):
     updated_at: Optional[datetime] = None 
     is_deleted: bool = False
     model_config = ConfigDict(from_attributes=True)
+    replies: List[CommentOut] = [] 

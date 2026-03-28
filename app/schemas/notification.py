@@ -21,6 +21,7 @@ class NotificationCreate(BaseModel):
     user_id: str
     actor_id: Optional[str] = None
     post_id: Optional[int] = None
+    status : Optional[str] = None
     type: NotificationType
     title: str = Field(..., max_length=200)
     content: Optional[str] = Field(None, max_length=1000)

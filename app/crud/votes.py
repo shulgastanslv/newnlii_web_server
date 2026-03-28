@@ -39,7 +39,7 @@ def get_votes_by_post(db: Session, post_id: int):
             Vote.post_id == post_id
         ).all()
 
-def delete_vote(db: Session, post_id: int, user_id: int):
+def delete_vote(db: Session, post_id: int, user_id: str):
     try:
         vote = db.query(Vote).filter(
             Vote.post_id == post_id,

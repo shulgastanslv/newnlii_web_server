@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session, joinedload
 from app.models.notification import Notification, NotificationStatus
 from app.schemas.notification import NotificationCreate, NotificationUpdate
 
-
 def create_notification(db: Session, notification_in: NotificationCreate) -> Notification:
         moscow_time = datetime.utcnow() + timedelta(hours=3)
 
