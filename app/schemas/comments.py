@@ -20,5 +20,5 @@ class CommentOut(CommentBase):
     created_at: datetime
     updated_at: Optional[datetime] = None 
     is_deleted: bool = False
+    replies: Optional[List[CommentOut]] = [] 
     model_config = ConfigDict(from_attributes=True)
-    replies: List[CommentOut] = [] 
