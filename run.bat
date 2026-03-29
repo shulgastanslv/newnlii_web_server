@@ -9,13 +9,6 @@ if not exist .venv (
     echo Creating virtual environment...
     python -m venv .venv
 )
-@echo venv_created
-
-@echo activate_venv
-.\venv\Scripts\activate
-@echo venv_activated
-
-REM
 
 REM
 echo Starting Main API Server...

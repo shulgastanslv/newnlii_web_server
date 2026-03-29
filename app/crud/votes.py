@@ -4,6 +4,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from app.models.vote import Vote
 from app.schemas.votes import VoteCreate
+from app.redis_client import redis_client
 
 def create_vote(db: Session, vote_in : VoteCreate):
 
@@ -30,6 +31,7 @@ def create_vote(db: Session, vote_in : VoteCreate):
         db.add(db_vote)
         db.commit()
         db.refresh(db_vote)
+        redis_client.invalidate_keys_by_pattern("posts:cursor:*")
 
         return db_vote
 
