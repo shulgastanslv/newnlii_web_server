@@ -59,15 +59,46 @@ def get_posts(
     return result
    
 def get_posts_by_user_id(db: Session, user_id: str):
-    return db.query(Post).filter(Post.author_id == user_id).order_by(Post.created_at.desc()).all()
+    cache_key = f"user_posts:{user_id}"
+    
+    # Пытаемся получить из кэша
+    cached_result = redis_client.get_json(cache_key)
+    if cached_result:
+        return [PostOut.model_validate(post) for post in cached_result]
+    
+    # Если нет в кэше - запрос в БД
+    posts = db.query(Post).filter(Post.author_id == user_id).order_by(Post.created_at.desc()).all()
+    
+    # Конвертируем в Pydantic
+    pydantic_posts = [PostOut.model_validate(post) for post in posts]
+    
+    # Сохраняем в кэш на 60 секунд
+    redis_client.setex(cache_key, 600, [p.model_dump() for p in pydantic_posts])
+    
+    return pydantic_posts
 
 def get_saved_posts(db: Session, user_id: str):
+    cache_key = f"saved_posts:{user_id}"
+    
+    # Пытаемся получить из кэша
+    cached_result = redis_client.get_json(cache_key)
+    if cached_result:
+        return [PostOut.model_validate(post) for post in cached_result]
+    
+    # Если нет в кэше - запрос в БД
     saved_posts = db.query(SavedPost).filter(
         SavedPost.user_id == user_id
     ).order_by(SavedPost.saved_at.desc()).all()
     
-    return [saved.post for saved in saved_posts if saved.post]
-
+    posts = [saved.post for saved in saved_posts if saved.post]
+    
+    # Конвертируем в Pydantic
+    pydantic_posts = [PostOut.model_validate(post) for post in posts]
+    
+    # Сохраняем в кэш на 60 секунд
+    redis_client.setex(cache_key, 600, [p.model_dump() for p in pydantic_posts])
+    
+    return pydantic_posts
  
 def save_post(id: int, user_id: str, db: Session):
         existing_save = db.query(SavedPost).filter(
