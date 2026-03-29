@@ -57,7 +57,8 @@ def get_posts(
     })
 
     return result
-   
+ 
+ 
 def get_posts_by_user_id(db: Session, user_id: str):
     cache_key = f"user_posts:{user_id}"
     
@@ -248,7 +249,7 @@ def get_popular_tags(db: Session, limit: int = 10) -> List[Dict[str, Any]]:
 
     return result
 
-def delete_post(post_id: int, user_id: int, db: Session):
+def delete_post(post_id: int, user_id: str, db: Session):
         post = db.query(Post).filter(
             Post.id == post_id,
             Post.author_id == user_id
@@ -262,6 +263,7 @@ def delete_post(post_id: int, user_id: int, db: Session):
         
         db.delete(post)
         db.commit()
-        
+        redis_client.invalidate_keys_by_pattern("posts:cursor:*")
+
         return True
   

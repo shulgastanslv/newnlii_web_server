@@ -71,7 +71,7 @@ def get_post_by_id_route(
 @router.delete("/{post_id}", response_model=bool)
 def delete_post_route(
     post_id: int = Path(..., description="ID поста", ge=1), 
-    user_id: int = Query(..., description="ID пользователя"),
+    user_id: str = Query(..., description="ID пользователя"),
     db: Session = Depends(get_db)
 ):
     try:
