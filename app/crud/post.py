@@ -12,51 +12,36 @@ from app.redis_client import redis_client
 
 
 def get_posts(
-    db: Session, 
-    cursor: Optional[int] = None, 
-    limit: int = 15, 
+    db: Session,
+    cursor: Optional[int] = None,
+    limit: int = 15,
 ):
-    cache_key = f"posts:cursor:{cursor or 0}:limit:{limit}"
-    
-    cached_result = redis_client.get_json(cache_key)
-    if cached_result:
-        return {
-            "posts": [PostOut.model_validate(post) for post in cached_result["posts"]],
-            "has_next": cached_result["has_next"],
-            "next_cursor": cached_result["next_cursor"],
-        }
-    
+
     query = db.query(Post).options(
         selectinload(Post.tags),
         selectinload(Post.comments).selectinload(Comment.author),
         selectinload(Post.saved_by),
         selectinload(Post.votes),
     )
-    if cursor:
+
+    if cursor is not None:
         query = query.filter(Post.id < cursor)
 
-    query = query.order_by(Post.id.desc())
-    posts = query.limit(limit + 1).all()
-    
-    has_next = len(posts) > limit
-    if has_next:
-        posts = posts[:-1]
-    
-    pydantic_posts = [PostOut.model_validate(post) for post in posts]
-    
-    result = {
-        "posts": pydantic_posts,
-        "has_next": has_next,
-        "next_cursor": posts[-1].id if posts else None,
-    }
-    
-    redis_client.setex(cache_key, 60, {
-        "posts": [p.model_dump() for p in pydantic_posts],
-        "has_next": has_next,
-        "next_cursor": posts[-1].id if posts else None,
-    })
+    posts = query.order_by(Post.id.desc()).limit(limit + 1).all()
 
-    return result
+    has_more = len(posts) > limit
+
+    if has_more:
+        posts = posts[:limit]
+        next_cursor = posts[-1].id
+    else:
+        next_cursor = None
+
+    return {
+        "posts": posts,
+        "next_cursor": next_cursor,
+        "has_next": has_more,
+    }
  
  
 def get_posts_by_user_id(db: Session, user_id: str):

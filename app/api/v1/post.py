@@ -14,6 +14,7 @@ router = APIRouter()
 class GetAllPosts(BaseModel):
     posts : List[PostOut]
     has_next : bool
+    next_cursor : Optional[int] = None
 
 @router.get("/", response_model=GetAllPosts)
 def get_all_posts_route(
