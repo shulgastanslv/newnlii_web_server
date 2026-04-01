@@ -26,7 +26,6 @@ class UserCreate(BaseModel):
 class UserOut(UserBase):
     id: str 
     password: Optional[str] = Field(None, min_length=8, description="Hashed password")
-    verify: bool = False
     model_config = ConfigDict(from_attributes=True)
 
 class UserUpdate(BaseModel):

@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1 import user
+from app.api.v1 import user, views
 from app.api.v1 import post
 from app.api.v1 import tag
 from app.api.v1 import notification
@@ -16,3 +16,4 @@ api_router.include_router(notification.router, prefix="/notifications", tags=["N
 api_router.include_router(comments.router, prefix="/comments", tags=["Comments"])
 api_router.include_router(follow.router, prefix="/follows", tags=["Follows"])
 api_router.include_router(vote.router, prefix="/votes", tags=["Votes"])
+api_router.include_router(views.router, prefix="/views", tags=["Views"])

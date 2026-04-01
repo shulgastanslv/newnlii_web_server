@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.models.vote import Vote
 from app.schemas.comments import CommentOut
 from app.schemas.user import UserOut
+from app.schemas.views import ViewOut
 from app.schemas.votes import VoteOut
 
 class TagResponse(BaseModel):
@@ -69,5 +70,5 @@ class PostOut(PostBase):
     saved_by : Optional[List[SavedPostOut]] = []
     votes : Optional[List[VoteOut]] = []
     model_config = ConfigDict(from_attributes=True)
-
+    views: Optional[List[ViewOut]] = []
 
