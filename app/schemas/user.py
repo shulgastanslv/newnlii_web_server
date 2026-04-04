@@ -15,6 +15,8 @@ class UserBase(BaseModel):
     closed: bool = False
     verify: bool = False
     is_google : bool = False
+    is_active : bool = False
+    created_at : datetime
 
 class UserCreate(BaseModel):
     user_id : str
