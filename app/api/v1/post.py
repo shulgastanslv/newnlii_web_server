@@ -19,11 +19,13 @@ class GetAllPosts(BaseModel):
 @router.get("/", response_model=GetAllPosts)
 def get_all_posts_route(
     cursor: int | None = None,
+    tab: str = "foryou", 
     limit: int = Query(15, le=50),
+    current_user_id: Optional[str] = None, 
     db: Session = Depends(get_db)
 ):
     try:
-        result = crud_post.get_posts(db, cursor=cursor, limit=limit)
+        result = crud_post.get_posts(db, cursor=cursor, limit=limit, tab=tab, current_user_id=current_user_id)
         return result
     except HTTPException as e:
         raise e
