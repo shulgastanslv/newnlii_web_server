@@ -25,6 +25,8 @@ def get_posts(
         selectinload(Post.comments).selectinload(Comment.author),
         selectinload(Post.saved_by),
         selectinload(Post.votes),
+    ).join(Post.author).filter(
+        User.closed == False
     )
 
     if tab == "new":
@@ -60,7 +62,7 @@ def get_posts(
                 query = query.filter(Post.created_at < cursor_post.created_at)
         else:
             query = query.filter(Post.id < cursor)
-    
+            
     # Сортировка
     query = query.order_by(order_field)
     
@@ -95,6 +97,53 @@ def get_posts_by_user_id(db: Session, user_id: str):
     pydantic_posts = [PostOut.model_validate(post) for post in posts]
     
     # Сохраняем в кэш на 60 секунд
+    redis_client.setex(cache_key, 600, [p.model_dump() for p in pydantic_posts])
+    
+    return pydantic_posts
+
+def get_posts_by_tag(db: Session, tag_name: str):
+    cache_key = f"tag_posts:{tag_name}"
+    
+    # Пытаемся получить из кэша
+    cached_result = redis_client.get_json(cache_key)
+    if cached_result:
+        return [PostOut.model_validate(post) for post in cached_result]
+    
+    # Если нет в кэше - запрос в БД
+    # Предполагается, что у вас есть связь many-to-many между Post и Tag
+    posts = db.query(Post).join(Post.tags).filter(Tag.name == tag_name).order_by(Post.created_at.desc()).all()
+    
+    # Альтернативный запрос если используется ассоциативная таблица
+    # posts = db.query(Post).join(post_tag_association).join(Tag).filter(Tag.name == tag_name).order_by(Post.created_at.desc()).all()
+    
+    # Конвертируем в Pydantic
+    pydantic_posts = [PostOut.model_validate(post) for post in posts]
+    
+    # Сохраняем в кэш на 10 минут (600 секунд)
+    redis_client.setex(cache_key, 600, [p.model_dump() for p in pydantic_posts])
+    
+    return pydantic_posts
+
+# В CRUD функциях
+def get_posts_by_category(db: Session, category_name: str):
+    cache_key = f"category_posts:{category_name}"
+    
+    # Пытаемся получить из кэша
+    cached_result = redis_client.get_json(cache_key)
+    if cached_result:
+        return [PostOut.model_validate(post) for post in cached_result]
+    
+    # Если нет в кэше - запрос в БД
+    # Предполагается, что у поста есть поле category_id или category_name
+    posts = db.query(Post).filter(Post.category == category_name).order_by(Post.created_at.desc()).all()
+    
+    # Альтернативный вариант если category_name хранится напрямую в Post
+    # posts = db.query(Post).filter(Post.category_name == category_name).order_by(Post.created_at.desc()).all()
+    
+    # Конвертируем в Pydantic
+    pydantic_posts = [PostOut.model_validate(post) for post in posts]
+    
+    # Сохраняем в кэш на 10 минут (600 секунд)
     redis_client.setex(cache_key, 600, [p.model_dump() for p in pydantic_posts])
     
     return pydantic_posts
@@ -232,7 +281,7 @@ def get_popular_tags(db: Session, limit: int = 10) -> List[Dict[str, Any]]:
     if cached_result:
         return json.loads(cached_result)
 
-    subquery = db.query(
+    rows = db.query(
         Tag.id,
         Tag.name,
         Tag.slug,
@@ -243,16 +292,9 @@ def get_popular_tags(db: Session, limit: int = 10) -> List[Dict[str, Any]]:
         Tag.id, Tag.name, Tag.slug
     ).order_by(
         func.count(post_tags.c.post_id).desc()
-    ).limit(limit).subquery()
-
-    rows = db.query(
-        subquery.c.id,
-        subquery.c.name,
-        subquery.c.slug,
-        subquery.c.usage_count,
-    ).all()
-
-    result = [
+    ).limit(limit).all()
+    
+    tags = [
         {
             "id": row.id,
             "name": row.name,
@@ -261,14 +303,15 @@ def get_popular_tags(db: Session, limit: int = 10) -> List[Dict[str, Any]]:
         }
         for row in rows
     ]
+    
+    result = [tag for tag in tags if tag["usage_count"] > 1]
 
-    # кэш
     redis_client.setex(
         cache_key,
         300,
         json.dumps(result, cls=DateTimeEncoder),
     )
-
+    
     return result
 
 def delete_post(post_id: int, user_id: str, db: Session):

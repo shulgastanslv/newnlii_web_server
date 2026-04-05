@@ -45,6 +45,34 @@ def get_all_posts_by_userid_route(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+    
+@router.get("/tag/{tag_name}", response_model=List[PostOut])
+def get_all_posts_by_tag_route(
+    tag_name: str,
+    db: Session = Depends(get_db)
+):
+    try:
+        result = crud_post.get_posts_by_tag(db, tag_name=tag_name)
+        return result
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+    
+
+@router.get("/category/{category_name}", response_model=List[PostOut])
+def get_all_posts_by_category_route(
+    category_name: str,
+    db: Session = Depends(get_db)
+):
+    try:
+        result = crud_post.get_posts_by_category(db, category_name=category_name)
+        return result
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
 
 @router.get("/saved/{user_id}", response_model=List[PostOut])
 def get_saved_posts_by_userid_route(
