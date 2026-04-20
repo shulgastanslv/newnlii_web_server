@@ -12,69 +12,62 @@ from app.schemas.post import PostCreate, PostOut
 from app.redis_client import redis_client
 
 
-def get_posts(
+def get_posts_optimized(
     db: Session,
     cursor: Optional[int] = None,
     limit: int = 15,
     current_user_id: Optional[str] = None, 
-    tab : str = "foryou",
+    tab: str = "foryou",
 ):
-
-    query = db.query(Post).options(
-        selectinload(Post.tags),
-        selectinload(Post.comments).selectinload(Comment.author),
-        selectinload(Post.saved_by),
-        selectinload(Post.votes),
-    ).join(Post.author).filter(
-        User.closed == False
-    )
-
+    # Сначала получаем ТОЛЬКО ID постов (быстро)
+    subquery = db.query(Post.id).join(Post.author).filter(User.closed == False)
+    
     if tab == "new":
-        # Посты за последние 24 часа, сортировка по убыванию (новые сверху)
         yesterday = datetime.now() - timedelta(days=1)
-        query = query.filter(Post.created_at >= yesterday)
+        subquery = subquery.filter(Post.created_at >= yesterday)
         order_field = Post.created_at.desc()
     elif tab == "following":
-        # Только посты от авторов, на которых подписан текущий пользователь
         if current_user_id:
-           query = query.join(Post.author).join(
-            Follow, Follow.following_id == User.id  # following_id - на кого подписаны
-            ).filter(
-                Follow.follower_id == current_user_id  # follower_id - кто подписан
-            )
+            subquery = subquery.join(Post.author).join(
+                Follow, Follow.following_id == User.id
+            ).filter(Follow.follower_id == current_user_id)
         else:
-            # Если пользователь не авторизован, показываем пустой результат
-            return {
-                "posts": [],
-                "next_cursor": None,
-                "has_next": False
-            }
+            return {"posts": [], "next_cursor": None, "has_next": False}
         order_field = Post.id.desc()
-        
-    else:  # "foryou" - алгоритмическая лента (для примера - просто последние)
+    else:
         order_field = Post.id.desc()
     
     if cursor is not None:
         if tab == "new":
-            # Для new используем created_at для курсора
-            cursor_post = db.query(Post).filter(Post.id == cursor).first()
+            cursor_post = db.query(Post.created_at).filter(Post.id == cursor).first()
             if cursor_post:
-                query = query.filter(Post.created_at < cursor_post.created_at)
+                subquery = subquery.filter(Post.created_at < cursor_post[0])
         else:
-            query = query.filter(Post.id < cursor)
-            
-    # Сортировка
-    query = query.order_by(order_field)
+            subquery = subquery.filter(Post.id < cursor)
     
-    posts = query.limit(limit + 1).all()
+    subquery = subquery.order_by(order_field).limit(limit + 1)
+    post_ids = [row[0] for row in subquery.all()]
     
-    has_more = len(posts) > limit
-    
+    has_more = len(post_ids) > limit
     if has_more:
-        posts = posts[:limit]
-        next_cursor = posts[-1].id
+        post_ids = post_ids[:limit]
+        next_cursor = post_ids[-1]
     else:
         next_cursor = None
+    
+    # ТЕПЕРЬ загружаем полные данные только для нужных ID
+    if post_ids:
+        posts = db.query(Post).options(
+            selectinload(Post.tags),
+            selectinload(Post.saved_by),
+            selectinload(Post.votes),
+        ).filter(Post.id.in_(post_ids)).all()
+        
+        # Восстанавливаем порядок
+        posts_dict = {p.id: p for p in posts}
+        posts = [posts_dict[pid] for pid in post_ids if pid in posts_dict]
+    else:
+        posts = []
     
     return {
         "posts": posts,
@@ -83,90 +76,60 @@ def get_posts(
     }
  
 def get_posts_by_user_id(db: Session, user_id: str):
-    cache_key = f"user_posts:{user_id}"
     
-    # Пытаемся получить из кэша
+    cache_key = f"user_posts:{user_id}"
     cached_result = redis_client.get_json(cache_key)
+    
     if cached_result:
         return [PostOut.model_validate(post) for post in cached_result]
     
-    # Если нет в кэше - запрос в БД
     posts = db.query(Post).filter(Post.author_id == user_id).order_by(Post.created_at.desc()).all()
-    
-    # Конвертируем в Pydantic
     pydantic_posts = [PostOut.model_validate(post) for post in posts]
-    
-    # Сохраняем в кэш на 60 секунд
     redis_client.setex(cache_key, 600, [p.model_dump() for p in pydantic_posts])
-    
     return pydantic_posts
 
 def get_posts_by_tag(db: Session, tag_name: str):
-    cache_key = f"tag_posts:{tag_name}"
     
-    # Пытаемся получить из кэша
+    cache_key = f"tag_posts:{tag_name}"
     cached_result = redis_client.get_json(cache_key)
+    
     if cached_result:
         return [PostOut.model_validate(post) for post in cached_result]
     
-    # Если нет в кэше - запрос в БД
-    # Предполагается, что у вас есть связь many-to-many между Post и Tag
     posts = db.query(Post).join(Post.tags).filter(Tag.name == tag_name).order_by(Post.created_at.desc()).all()
-    
-    # Альтернативный запрос если используется ассоциативная таблица
-    # posts = db.query(Post).join(post_tag_association).join(Tag).filter(Tag.name == tag_name).order_by(Post.created_at.desc()).all()
-    
-    # Конвертируем в Pydantic
     pydantic_posts = [PostOut.model_validate(post) for post in posts]
-    
-    # Сохраняем в кэш на 10 минут (600 секунд)
     redis_client.setex(cache_key, 600, [p.model_dump() for p in pydantic_posts])
-    
     return pydantic_posts
 
-# В CRUD функциях
 def get_posts_by_category(db: Session, category_name: str):
+    
     cache_key = f"category_posts:{category_name}"
     
-    # Пытаемся получить из кэша
     cached_result = redis_client.get_json(cache_key)
     if cached_result:
         return [PostOut.model_validate(post) for post in cached_result]
     
-    # Если нет в кэше - запрос в БД
-    # Предполагается, что у поста есть поле category_id или category_name
     posts = db.query(Post).filter(Post.category == category_name).order_by(Post.created_at.desc()).all()
     
-    # Альтернативный вариант если category_name хранится напрямую в Post
-    # posts = db.query(Post).filter(Post.category_name == category_name).order_by(Post.created_at.desc()).all()
-    
-    # Конвертируем в Pydantic
     pydantic_posts = [PostOut.model_validate(post) for post in posts]
-    
-    # Сохраняем в кэш на 10 минут (600 секунд)
     redis_client.setex(cache_key, 600, [p.model_dump() for p in pydantic_posts])
-    
     return pydantic_posts
 
 def get_saved_posts(db: Session, user_id: str):
     cache_key = f"saved_posts:{user_id}"
     
-    # Пытаемся получить из кэша
     cached_result = redis_client.get_json(cache_key)
     if cached_result:
         return [PostOut.model_validate(post) for post in cached_result]
     
-    # Если нет в кэше - запрос в БД
     saved_posts = db.query(SavedPost).filter(
         SavedPost.user_id == user_id
     ).order_by(SavedPost.saved_at.desc()).all()
     
     posts = [saved.post for saved in saved_posts if saved.post]
     
-    # Конвертируем в Pydantic
     pydantic_posts = [PostOut.model_validate(post) for post in posts]
     
-    # Сохраняем в кэш на 60 секунд
     redis_client.setex(cache_key, 600, [p.model_dump() for p in pydantic_posts])
     
     return pydantic_posts

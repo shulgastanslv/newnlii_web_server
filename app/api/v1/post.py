@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db
 from app.crud import post as crud_post
 from typing import List, Optional
-from app.schemas.post import PostCreate, PostOut, SavedPostOut
+from app.schemas.post import PostCreate, PostOut
 
 router = APIRouter()
 
@@ -25,7 +25,7 @@ def get_all_posts_route(
     db: Session = Depends(get_db)
 ):
     try:
-        result = crud_post.get_posts(db, cursor=cursor, limit=limit, tab=tab, current_user_id=current_user_id)
+        result = crud_post.get_posts_optimized(db, cursor=cursor, limit=limit, tab=tab, current_user_id=current_user_id)
         return result
     except HTTPException as e:
         raise e

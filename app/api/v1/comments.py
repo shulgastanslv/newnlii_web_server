@@ -5,9 +5,7 @@ from app.api.deps import get_db
 from app.crud import comments as crud_comment
 from app.schemas.comments import CommentCreate, CommentOut
 
-
 router = APIRouter()
-
 
 @router.get("/", response_model=List[CommentOut])
 def get_comments(
